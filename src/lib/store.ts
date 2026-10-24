@@ -19,11 +19,11 @@ import {
 import { createClient, isSupabaseConfigured } from "./supabase/client";
 
 const STORAGE_KEYS = {
-  SPACE: "olm_space_v1",
-  MEMORIES: "olm_memories_v1",
-  BUCKET_LIST: "olm_bucket_list_v1",
-  LITTLE_NOTES: "olm_little_notes_v1",
-  ACTIVE_USER_ID: "olm_active_user_id_v1",
+  SPACE: "olm_space_v2",
+  MEMORIES: "olm_memories_v2",
+  BUCKET_LIST: "olm_bucket_list_v2",
+  LITTLE_NOTES: "olm_little_notes_v2",
+  ACTIVE_USER_ID: "olm_active_user_id_v2",
 };
 
 function getLocal<T>(key: string, defaultValue: T): T {
@@ -59,9 +59,9 @@ export function getActiveUser(): Profile {
     member?.profile ||
     space.members[0]?.profile || {
       id: "user-1",
-      email: "rian@ourlittlemoments.id",
-      full_name: "Rian Pratama",
-      nickname: "Rian",
+      email: "aufa@ourlittlemoments.id",
+      full_name: "Aufa",
+      nickname: "Aufa",
       avatar_url: "/images/hero.jpg",
       created_at: new Date().toISOString(),
     }

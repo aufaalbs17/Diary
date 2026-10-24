@@ -82,7 +82,7 @@ export default function LittleNotesPage() {
     try {
       const recipient = partner || {
         id: "user-2",
-        nickname: "Alya",
+        nickname: "Anathia",
       };
 
       const created = await sendLittleNote({
