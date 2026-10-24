@@ -299,6 +299,23 @@ export async function saveMemory(memoryData: Partial<Memory>): Promise<Memory> {
   return finalMemory;
 }
 
+export async function toggleFavorite(id: string): Promise<Memory | null> {
+  const all = getLocal<Memory[]>(STORAGE_KEYS.MEMORIES, INITIAL_MEMORIES);
+  const index = all.findIndex((m) => m.id === id);
+  if (index === -1) return null;
+
+  const current = all[index];
+  const updated: Memory = {
+    ...current,
+    is_favorite: !current.is_favorite,
+    updated_at: new Date().toISOString(),
+  };
+
+  all[index] = updated;
+  setLocal(STORAGE_KEYS.MEMORIES, all);
+  return updated;
+}
+
 export async function deleteMemory(id: string): Promise<boolean> {
   let all = getLocal<Memory[]>(STORAGE_KEYS.MEMORIES, INITIAL_MEMORIES);
   all = all.filter((m) => m.id !== id);
