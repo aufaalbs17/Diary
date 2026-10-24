@@ -19,7 +19,6 @@ import {
   Menu,
   X,
   Book,
-  MapPin,
   Clock,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
@@ -67,12 +66,6 @@ export function Navbar() {
       label: "Timeline Bersama",
       desc: "Garis waktu kronologis perjalanan",
       icon: Clock,
-    },
-    {
-      href: "/places",
-      label: "Tempat Kita",
-      desc: "Peta kafe, pantai & sudut kota",
-      icon: MapPin,
     },
     {
       href: "/bucket-list",
@@ -129,7 +122,7 @@ export function Navbar() {
             );
           })}
 
-          {/* Explore Dropdown (Kalender, Timeline, Tempat Kita, Bucket List) */}
+          {/* Explore Dropdown (Kalender, Timeline, Bucket List) */}
           <div className="relative">
             <button
               onClick={() => setIsExploreOpen(!isExploreOpen)}

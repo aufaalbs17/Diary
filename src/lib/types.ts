@@ -189,5 +189,5 @@ export interface DiaryStats {
   totalMemories: number;
   totalPhotos: number;
   totalVideos: number;
-  totalPlaces: number;
+  totalNotes: number;
 }

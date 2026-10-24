@@ -33,7 +33,7 @@ export default function HomePage() {
     totalMemories: 0,
     totalPhotos: 0,
     totalVideos: 0,
-    totalPlaces: 0,
+    totalNotes: 0,
   });
   const [recentMemories, setRecentMemories] = useState<Memory[]>([]);
   const [featuredMemory, setFeaturedMemory] = useState<Memory | null>(null);
@@ -182,19 +182,22 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="paper-card p-5 sm:p-6 rounded-3xl flex flex-col justify-between group">
-          <div className="w-10 h-10 rounded-2xl bg-[#F1EBE4] text-[#78655F] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-            <MapPin className="w-5 h-5 text-[#CFA6A3]" />
+        <Link
+          href="/notes"
+          className="paper-card p-5 sm:p-6 rounded-3xl flex flex-col justify-between group hover:border-[#CFA6A3] transition-all hover:shadow-md"
+        >
+          <div className="w-10 h-10 rounded-2xl bg-[#F1EBE4] text-[#78655F] flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-[#CFA6A3]/15 transition-all">
+            <Mail className="w-5 h-5 text-[#CFA6A3]" />
           </div>
           <div>
             <p className="font-editorial-heading text-3xl sm:text-4xl font-normal text-[#302B29]">
-              {stats.totalPlaces}
+              {stats.totalNotes}
             </p>
-            <p className="text-xs text-[#8D817B] font-editorial-body mt-1">
-              Tempat Dijelajahi
+            <p className="text-xs text-[#8D817B] font-editorial-body mt-1 group-hover:text-[#302B29] transition-colors">
+              Surat Kecil 💌
             </p>
           </div>
-        </div>
+        </Link>
       </section>
 
       {/* 3. Featured Memory Section */}

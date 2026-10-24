@@ -8,7 +8,7 @@ import {
   BookOpen,
   Plus,
   Image as ImageIcon,
-  Compass,
+  Mail,
 } from "lucide-react";
 
 export function MobileNav() {
@@ -23,7 +23,7 @@ export function MobileNav() {
     { href: "/diary", label: "Jurnal", icon: BookOpen },
     { href: "/diary/new", label: "Tambah", icon: Plus, isAction: true },
     { href: "/gallery", label: "Galeri", icon: ImageIcon },
-    { href: "/places", label: "Tempat", icon: Compass },
+    { href: "/notes", label: "Surat", icon: Mail },
   ];
 
   return (

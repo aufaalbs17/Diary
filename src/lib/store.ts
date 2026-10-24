@@ -501,15 +501,14 @@ export async function deleteBucketItem(id: string): Promise<boolean> {
 // ----------------------------------------------------------------------------
 
 export async function getDiaryStats(): Promise<DiaryStats> {
-  const memories = await getMemories();
+  const [memories, notes] = await Promise.all([
+    getMemories(),
+    getLittleNotes(),
+  ]);
   let totalPhotos = 0;
   let totalVideos = 0;
-  const placesSet = new Set<string>();
 
   for (const m of memories) {
-    if (m.location_name && m.location_name.trim()) {
-      placesSet.add(m.location_name.trim().toLowerCase());
-    }
     for (const media of m.media) {
       if (media.file_type === "video") totalVideos++;
       else totalPhotos++;
@@ -520,7 +519,7 @@ export async function getDiaryStats(): Promise<DiaryStats> {
     totalMemories: memories.length,
     totalPhotos,
     totalVideos,
-    totalPlaces: placesSet.size,
+    totalNotes: notes.length,
   };
 }
 
