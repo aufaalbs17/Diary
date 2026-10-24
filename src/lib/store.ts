@@ -373,6 +373,9 @@ export interface GalleryItem {
   event_date: string;
   location_name?: string;
   category: CategoryKey;
+  mood?: MoodKey;
+  is_favorite?: boolean;
+  author_name?: string;
   file_path: string;
   file_type: "image" | "video";
   caption?: string;
@@ -391,6 +394,9 @@ export async function getGalleryMedia(): Promise<GalleryItem[]> {
         event_date: m.event_date,
         location_name: m.location_name,
         category: m.category,
+        mood: m.mood,
+        is_favorite: m.is_favorite,
+        author_name: m.author_name,
         file_path: media.file_path,
         file_type: media.file_type,
         caption: media.caption,
