@@ -1,26 +1,100 @@
 @import "tailwindcss";
 
+@theme {
+  --color-romantic-bg: #FAF8F5;
+  --color-romantic-surface: #FFFFFF;
+  --color-romantic-cream: #F1EBE4;
+  --color-romantic-rose: #CFA6A3;
+  --color-romantic-rose-dark: #B88582;
+  --color-romantic-rose-light: #FBF4F3;
+  --color-romantic-brown: #78655F;
+  --color-romantic-brown-dark: #4A3E3B;
+  --color-romantic-text: #302B29;
+  --color-romantic-muted: #8D817B;
+  --color-romantic-border: #E9E1DB;
+
+  --font-serif: var(--font-playfair), Georgia, serif;
+  --font-sans: var(--font-dm-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-quote: var(--font-cormorant), Georgia, serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --bg-color: #FAF8F5;
+  --surface-color: #FFFFFF;
+  --cream-color: #F1EBE4;
+  --rose-color: #CFA6A3;
+  --brown-color: #78655F;
+  --text-primary: #302B29;
+  --text-secondary: #8D817B;
+  --border-color: #E9E1DB;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #FAF8F5;
+  color: #302B29;
+  font-family: var(--font-dm-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Custom Typography Helper Classes */
+.font-editorial-heading {
+  font-family: var(--font-playfair), Georgia, serif;
+  letter-spacing: -0.015em;
+}
+
+.font-editorial-body {
+  font-family: var(--font-dm-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.font-editorial-quote {
+  font-family: var(--font-cormorant), Georgia, serif;
+}
+
+/* Paper texture & soft shadows */
+.paper-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E9E1DB;
+  box-shadow: 0 4px 20px -2px rgba(120, 101, 95, 0.05), 0 2px 6px -1px rgba(120, 101, 95, 0.03);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.paper-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -4px rgba(120, 101, 95, 0.08), 0 4px 12px -2px rgba(120, 101, 95, 0.04);
+}
+
+.glass-header {
+  background: rgba(250, 248, 245, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(233, 225, 219, 0.8);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF8F5;
+}
+::-webkit-scrollbar-thumb {
+  background: #E9E1DB;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #CFA6A3;
+}
+
+/* Leaflet map styles */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 1rem;
+  z-index: 10;
+  font-family: inherit;
 }
