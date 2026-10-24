@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Mail,
   Lock,
@@ -11,6 +11,10 @@ import {
   Heart,
   Clock,
   CheckCircle2,
+  Reply,
+  Stamp,
+  User,
+  Calendar,
 } from "lucide-react";
 import { LittleNote } from "@/lib/types";
 import { getLittleNotes, openLittleNote, sendLittleNote } from "@/lib/store";
@@ -19,7 +23,14 @@ import { useToast } from "@/components/ui/toast-provider";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 
-const EMOJI_OPTIONS = ["💌", "🌷", "✨", "☕", "🤍", "🌙", "🌻", "🌿"];
+const SEAL_OPTIONS = [
+  { emoji: "💌", label: "Surat Kasih", color: "from-[#D99A96] to-[#B87A76]" },
+  { emoji: "🌷", label: "Bunga Tulip", color: "from-[#C48E9A] to-[#A36C78]" },
+  { emoji: "✨", label: "Kejutan Manis", color: "from-[#D4AA7D] to-[#B3885C]" },
+  { emoji: "☕", label: "Obrolan Kafe", color: "from-[#A6897C] to-[#806457]" },
+  { emoji: "🤍", label: "Hati Murni", color: "from-[#D8C7C2] to-[#B5A19B]" },
+  { emoji: "🌙", label: "Malam Tenang", color: "from-[#9DA5B4] to-[#767E8F]" },
+];
 
 export default function LittleNotesPage() {
   const { user, partner, space } = useAuth();
@@ -28,9 +39,11 @@ export default function LittleNotesPage() {
   const [notes, setNotes] = useState<LittleNote[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeOpenedNote, setActiveOpenedNote] = useState<LittleNote | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<"all" | "to_anathia" | "to_aufa" | "locked">("all");
 
   // New Note Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [recipientChoice, setRecipientChoice] = useState<"Anathia" | "Aufa">("Anathia");
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [selectedEmoji, setSelectedEmoji] = useState("💌");
@@ -47,12 +60,22 @@ export default function LittleNotesPage() {
     load();
   }, []);
 
+  // Update recipient choice based on active user
+  useEffect(() => {
+    if (user?.nickname?.toLowerCase().includes("anathia")) {
+      setRecipientChoice("Aufa");
+    } else {
+      setRecipientChoice("Anathia");
+    }
+  }, [user]);
+
   const handleCardClick = async (note: LittleNote) => {
-    // Check if locked
-    if (note.unlock_at && new Date(note.unlock_at) > new Date()) {
+    const isLocked = note.unlock_at && new Date(note.unlock_at) > new Date();
+
+    if (isLocked) {
       info(
-        `Surat ini masih terkunci hingga ${format(
-          new Date(note.unlock_at),
+        `Surat ini masih tersegel rapi hingga ${format(
+          new Date(note.unlock_at!),
           "d MMMM yyyy, HH:mm",
           { locale: id }
         )} 🔒`
@@ -60,7 +83,6 @@ export default function LittleNotesPage() {
       return;
     }
 
-    // Mark opened
     if (!note.is_opened) {
       await openLittleNote(note.id);
       setNotes((prev) =>
@@ -69,6 +91,18 @@ export default function LittleNotesPage() {
     }
 
     setActiveOpenedNote(note);
+  };
+
+  const handleOpenComposer = (replyTo?: LittleNote) => {
+    if (replyTo) {
+      setTitle(`Balasan: ${replyTo.title}`);
+      setRecipientChoice(replyTo.sender_name === "Aufa" ? "Aufa" : "Anathia");
+      setActiveOpenedNote(null);
+    } else {
+      setTitle("");
+      setMessage("");
+    }
+    setIsModalOpen(true);
   };
 
   const handleSendNote = async (e: React.FormEvent) => {
@@ -80,14 +114,14 @@ export default function LittleNotesPage() {
 
     setIsSending(true);
     try {
-      const recipient = partner || {
-        id: "user-2",
-        nickname: "Anathia",
-      };
+      const recipientUser =
+        recipientChoice === "Anathia"
+          ? { id: "user-2", nickname: "Anathia" }
+          : { id: "user-1", nickname: "Aufa" };
 
       const created = await sendLittleNote({
-        recipient_id: recipient.id,
-        recipient_name: recipient.nickname || "Kamu",
+        recipient_id: recipientUser.id,
+        recipient_name: recipientUser.nickname,
         title: title.trim(),
         message: message.trim(),
         emoji: selectedEmoji,
@@ -99,7 +133,7 @@ export default function LittleNotesPage() {
       setTitle("");
       setMessage("");
       setUnlockAt("");
-      success("Surat kecil berhasil dikirim dengan penuh kehangatan 💌");
+      success("Surat manis telah dimasukkan ke dalam amplop dan terkirim 💌");
     } catch (err) {
       error("Gagal mengirim surat.");
     } finally {
@@ -107,13 +141,28 @@ export default function LittleNotesPage() {
     }
   };
 
+  const filteredNotes = useMemo(() => {
+    return notes.filter((n) => {
+      if (selectedFilter === "locked") {
+        return n.unlock_at && new Date(n.unlock_at) > new Date();
+      }
+      if (selectedFilter === "to_anathia") {
+        return n.recipient_name?.toLowerCase().includes("anathia");
+      }
+      if (selectedFilter === "to_aufa") {
+        return n.recipient_name?.toLowerCase().includes("aufa");
+      }
+      return true;
+    });
+  }, [notes, selectedFilter]);
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-[#E9E1DB]/80">
         <div>
           <span className="text-xs uppercase tracking-widest text-[#8D817B] font-mono">
-            Pesan Hangat
+            Kotak Surat Pribadi
           </span>
           <h1 className="font-editorial-heading text-3xl sm:text-5xl font-normal text-[#302B29] tracking-tight mt-1">
             Little Notes 💌
@@ -124,32 +173,83 @@ export default function LittleNotesPage() {
         </div>
 
         <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#CFA6A3] hover:bg-[#B88582] text-white rounded-full text-xs sm:text-sm font-editorial-body font-medium transition-all shadow-md shadow-[#CFA6A3]/30 active:scale-95 shrink-0 self-start sm:self-auto"
+          onClick={() => handleOpenComposer()}
+          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#CFA6A3] to-[#B88582] hover:opacity-95 text-white rounded-full text-xs sm:text-sm font-editorial-body font-medium transition-all shadow-md shadow-[#CFA6A3]/30 active:scale-95 shrink-0 self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
           <span>Tulis Surat Kecil</span>
         </button>
       </div>
 
-      {/* Notes / Envelopes Grid */}
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+        <button
+          onClick={() => setSelectedFilter("all")}
+          className={`px-4 py-2 rounded-full font-editorial-body transition-all whitespace-nowrap ${
+            selectedFilter === "all"
+              ? "bg-[#302B29] text-white shadow-xs"
+              : "bg-white border border-[#E9E1DB] text-[#78655F] hover:border-[#CFA6A3]"
+          }`}
+        >
+          Semua Surat ({notes.length})
+        </button>
+        <button
+          onClick={() => setSelectedFilter("to_anathia")}
+          className={`px-4 py-2 rounded-full font-editorial-body transition-all whitespace-nowrap ${
+            selectedFilter === "to_anathia"
+              ? "bg-[#302B29] text-white shadow-xs"
+              : "bg-white border border-[#E9E1DB] text-[#78655F] hover:border-[#CFA6A3]"
+          }`}
+        >
+          Untuk Anathia ♡
+        </button>
+        <button
+          onClick={() => setSelectedFilter("to_aufa")}
+          className={`px-4 py-2 rounded-full font-editorial-body transition-all whitespace-nowrap ${
+            selectedFilter === "to_aufa"
+              ? "bg-[#302B29] text-white shadow-xs"
+              : "bg-white border border-[#E9E1DB] text-[#78655F] hover:border-[#CFA6A3]"
+          }`}
+        >
+          Untuk Aufa ♡
+        </button>
+        <button
+          onClick={() => setSelectedFilter("locked")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-editorial-body transition-all whitespace-nowrap ${
+            selectedFilter === "locked"
+              ? "bg-[#302B29] text-white shadow-xs"
+              : "bg-white border border-[#E9E1DB] text-[#78655F] hover:border-[#CFA6A3]"
+          }`}
+        >
+          <Lock className="w-3.5 h-3.5 text-[#CFA6A3]" />
+          <span>Terkunci</span>
+        </button>
+      </div>
+
+      {/* Realistic Postal Envelopes Grid */}
       {isLoading ? (
-        <div className="py-20 text-center text-xs text-[#8D817B]">
+        <div className="py-24 text-center text-xs text-[#8D817B]">
           Mengumpulkan amplop surat...
         </div>
-      ) : notes.length === 0 ? (
+      ) : filteredNotes.length === 0 ? (
         <div className="text-center py-20 bg-white border border-[#E9E1DB] rounded-3xl p-8 max-w-md mx-auto space-y-3">
           <Mail className="w-10 h-10 text-[#CFA6A3] mx-auto" />
           <h3 className="font-editorial-heading text-lg text-[#302B29]">
-            Belum Ada Surat Tersimpan
+            Belum Ada Surat di Kategori Ini
           </h3>
           <p className="font-editorial-body text-xs text-[#8D817B]">
-            Jadilah yang pertama menuliskan pesan hangat untuk pasanganmu hari ini.
+            Tuliskan kata-kata manis pertama untuk pasanganmu sekarang.
           </p>
+          <button
+            onClick={() => handleOpenComposer()}
+            className="px-4 py-2 bg-[#F1EBE4] hover:bg-[#E9E1DB] text-[#302B29] rounded-full text-xs font-editorial-body transition-colors"
+          >
+            + Tulis Surat Sekarang
+          </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {notes.map((note) => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredNotes.map((note) => {
             const isLocked =
               note.unlock_at && new Date(note.unlock_at) > new Date();
 
@@ -157,57 +257,112 @@ export default function LittleNotesPage() {
               <div
                 key={note.id}
                 onClick={() => handleCardClick(note)}
-                className={`paper-card rounded-3xl p-6 flex flex-col justify-between cursor-pointer transition-all border ${
+                className={`group relative rounded-3xl overflow-hidden cursor-pointer transition-all duration-300 transform hover:-translate-y-1.5 hover:shadow-xl ${
                   isLocked
-                    ? "bg-[#FAF8F5] border-dashed border-[#E9E1DB]"
-                    : "bg-white border-[#E9E1DB] hover:border-[#CFA6A3]"
+                    ? "bg-[#F7F4F0] border-2 border-dashed border-[#DFCFC4] shadow-sm"
+                    : "bg-[#FFFFFF] border border-[#E8DFD7] shadow-md shadow-[#78655F]/6"
                 }`}
               >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-2xl">{note.emoji || "💌"}</span>
+                {/* Vintage Airmail Stripe Edge Banner */}
+                <div
+                  className="h-2 w-full"
+                  style={{
+                    background:
+                      "repeating-linear-gradient(45deg, #CFA6A3 0, #CFA6A3 12px, #FFFFFF 12px, #FFFFFF 20px, #B88582 20px, #B88582 32px, #FFFFFF 32px, #FFFFFF 40px)",
+                  }}
+                />
+
+                {/* Envelope Top Flap Simulation */}
+                <div className="relative bg-gradient-to-b from-[#F9F6F0] to-[#F1EAE0] px-5 pt-4 pb-5 border-b border-[#E3D8CC]">
+                  {/* Postmark stamp in corner */}
+                  <div className="absolute top-3 right-4 text-right pointer-events-none opacity-70">
+                    <div className="border border-[#78655F]/40 rounded-full px-2 py-0.5 text-[8px] font-mono tracking-widest text-[#78655F] uppercase inline-block -rotate-6">
+                      POST • {note.recipient_name}
+                    </div>
+                  </div>
+
+                  {/* Wax Seal Stamp in Center */}
+                  <div className="flex items-center justify-between">
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#CFA6A3] to-[#E5BEBC] border-2 border-white shadow-md flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                        {note.emoji || "💌"}
+                      </div>
+                      {isLocked && (
+                        <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#78655F] text-white flex items-center justify-center shadow-xs">
+                          <Lock className="w-2.5 h-2.5" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Status Pill */}
+                    <div>
+                      {isLocked ? (
+                        <span className="flex items-center gap-1 text-[11px] bg-[#EAE2D8] text-[#78655F] px-2.5 py-1 rounded-full font-medium">
+                          <Lock className="w-3 h-3 text-[#B88582]" />
+                          <span>Terkunci</span>
+                        </span>
+                      ) : note.is_opened ? (
+                        <span className="text-[11px] text-[#8D817B] font-editorial-body flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#CFA6A3]" />
+                          <span>Sudah Dibaca</span>
+                        </span>
+                      ) : (
+                        <span className="text-[10px] bg-gradient-to-r from-[#CFA6A3] to-[#B88582] text-white px-2.5 py-0.5 rounded-full font-medium shadow-xs animate-pulse">
+                          Surat Baru ✉️
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Envelope Body / Letter Preview */}
+                <div className="p-6 space-y-3 bg-[#FCFBF8] min-h-[170px] flex flex-col justify-between">
+                  <div className="space-y-2">
+                    {/* Recipient tag */}
+                    <div className="flex items-center gap-1 text-[11px] text-[#8D817B] font-editorial-body">
+                      <span>Untuk:</span>
+                      <span className="font-semibold text-[#302B29]">
+                        {note.recipient_name}
+                      </span>
+                    </div>
+
+                    <h3 className="font-editorial-heading text-lg font-medium text-[#302B29] leading-snug group-hover:text-[#B88582] transition-colors line-clamp-1">
+                      {note.title}
+                    </h3>
+
                     {isLocked ? (
-                      <span className="flex items-center gap-1 text-[11px] bg-[#F1EBE4] text-[#78655F] px-2.5 py-1 rounded-full">
-                        <Lock className="w-3 h-3 text-[#CFA6A3]" />
-                        <span>Terkunci</span>
-                      </span>
-                    ) : note.is_opened ? (
-                      <span className="text-[10px] text-[#8D817B] font-editorial-body">
-                        Terbuka
-                      </span>
+                      <div className="p-3 rounded-xl bg-[#FAF6F0] border border-[#E9E0D4] text-xs text-[#8D817B] space-y-1">
+                        <p className="font-medium text-[#78655F] flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5 text-[#CFA6A3]" />
+                          <span>Kapsul Waktu Rahasia</span>
+                        </p>
+                        <p className="text-[11px] leading-relaxed">
+                          Bisa dibuka pada:{" "}
+                          <span className="font-medium text-[#302B29]">
+                            {format(new Date(note.unlock_at!), "d MMMM yyyy", {
+                              locale: id,
+                            })}
+                          </span>
+                        </p>
+                      </div>
                     ) : (
-                      <span className="text-[10px] bg-[#CFA6A3] text-white px-2 py-0.5 rounded-full font-medium">
-                        Surat Baru!
-                      </span>
+                      <p className="font-editorial-body text-xs text-[#78655F] line-clamp-3 leading-relaxed">
+                        {note.message}
+                      </p>
                     )}
                   </div>
 
-                  <h3 className="font-editorial-heading text-lg font-medium text-[#302B29] line-clamp-1">
-                    {note.title}
-                  </h3>
-
-                  {isLocked ? (
-                    <p className="font-editorial-body text-xs text-[#8D817B] mt-2 italic flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-[#CFA6A3]" />
-                      <span>
-                        Terbuka pada{" "}
-                        {format(new Date(note.unlock_at!), "d MMM yyyy", {
-                          locale: id,
-                        })}
-                      </span>
-                    </p>
-                  ) : (
-                    <p className="font-editorial-body text-xs text-[#78655F] mt-2 line-clamp-3 leading-relaxed">
-                      {note.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="pt-4 mt-4 border-t border-[#E9E1DB]/70 flex items-center justify-between text-[11px] text-[#8D817B]">
-                  <span>Dari {note.sender_name}</span>
-                  <span>
-                    {format(new Date(note.created_at), "d MMM", { locale: id })}
-                  </span>
+                  {/* Card Footer: Sender & Date */}
+                  <div className="pt-3 border-t border-[#EFE8DF] flex items-center justify-between text-[11px] text-[#8D817B]">
+                    <span className="font-medium text-[#78655F]">
+                      Dari {note.sender_name} ♡
+                    </span>
+                    <span className="font-mono text-[10px]">
+                      {format(new Date(note.created_at), "d MMM yyyy", {
+                        locale: id,
+                      })}
+                    </span>
+                  </div>
                 </div>
               </div>
             );
@@ -215,87 +370,160 @@ export default function LittleNotesPage() {
         </div>
       )}
 
-      {/* Open Letter Modal Animation */}
+      {/* Realistic Opened Letter Modal */}
       {activeOpenedNote && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-[#FFFFFF] border-2 border-[#E9E1DB] rounded-3xl p-6 sm:p-10 max-w-lg w-full shadow-2xl relative space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative max-w-xl w-full bg-[#FAF7F2] border-4 border-white rounded-3xl shadow-2xl p-6 sm:p-10 space-y-6 animate-in zoom-in-95 duration-200 overflow-hidden">
+            {/* Airmail header strip */}
+            <div
+              className="absolute top-0 left-0 right-0 h-2.5"
+              style={{
+                background:
+                  "repeating-linear-gradient(45deg, #CFA6A3 0, #CFA6A3 12px, #FFFFFF 12px, #FFFFFF 20px, #B88582 20px, #B88582 32px, #FFFFFF 32px, #FFFFFF 40px)",
+              }}
+            />
+
+            {/* Close Button */}
             <button
               onClick={() => setActiveOpenedNote(null)}
-              className="absolute top-5 right-5 p-1.5 text-[#8D817B] hover:text-[#302B29] rounded-full hover:bg-[#FAF8F5]"
+              className="absolute top-5 right-5 p-2 text-[#8D817B] hover:text-[#302B29] rounded-full hover:bg-black/5 transition-colors"
+              aria-label="Tutup Surat"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="text-center space-y-2">
-              <span className="text-4xl inline-block mb-1">
+            {/* Letter Header */}
+            <div className="text-center space-y-2 pt-2 border-b border-[#E8DFD5] pb-5">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#CFA6A3] to-[#E5BEBC] border-2 border-white shadow-md flex items-center justify-center text-2xl mx-auto mb-2">
                 {activeOpenedNote.emoji}
-              </span>
-              <p className="text-xs uppercase tracking-widest text-[#8D817B] font-mono">
-                Surat untuk {activeOpenedNote.recipient_name}
+              </div>
+              <p className="text-[11px] uppercase tracking-widest text-[#8D817B] font-mono">
+                Surat Pribadi untuk {activeOpenedNote.recipient_name}
               </p>
               <h2 className="font-editorial-heading text-2xl sm:text-3xl font-medium text-[#302B29]">
                 {activeOpenedNote.title}
               </h2>
             </div>
 
-            <div className="bg-[#FAF8F5] p-6 rounded-2xl border border-[#E9E1DB]/60">
-              <p className="font-editorial-quote text-base sm:text-lg text-[#302B29] leading-relaxed whitespace-pre-line">
+            {/* Letter Body Parchment */}
+            <div className="bg-white/80 p-6 sm:p-8 rounded-2xl border border-[#E8DFD5] shadow-xs">
+              <p className="font-editorial-quote text-lg sm:text-xl text-[#302B29] leading-relaxed whitespace-pre-line">
                 {activeOpenedNote.message}
               </p>
             </div>
 
-            <div className="flex items-center justify-between text-xs text-[#8D817B] pt-2">
-              <span>
+            {/* Signature & Timestamp */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#8D817B] pt-1">
+              <span className="font-editorial-body text-[11px]">
                 Tertulis pada{" "}
                 {format(
                   new Date(activeOpenedNote.created_at),
-                  "d MMMM yyyy, HH:mm",
+                  "EEEE, d MMMM yyyy • HH:mm",
                   { locale: id }
                 )}
               </span>
-              <span className="font-medium text-[#78655F]">
-                Dengan kasih, {activeOpenedNote.sender_name} ♡
+              <span className="font-editorial-quote italic text-base text-[#78655F] font-semibold">
+                Dengan segenap kasih, {activeOpenedNote.sender_name} ♡
               </span>
+            </div>
+
+            {/* Actions: Reply or Close */}
+            <div className="pt-4 border-t border-[#E8DFD5] flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveOpenedNote(null)}
+                className="px-5 py-2.5 rounded-full border border-[#E3D8CC] text-xs font-editorial-body text-[#78655F] hover:bg-white"
+              >
+                Lipat &amp; Simpan Kembali
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleOpenComposer(activeOpenedNote)}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#CFA6A3] to-[#B88582] text-white text-xs font-editorial-body font-medium shadow-md shadow-[#CFA6A3]/30 hover:opacity-95 transition-opacity"
+              >
+                <Reply className="w-3.5 h-3.5" />
+                <span>Balas Surat Ini ✍️</span>
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Write New Note Modal */}
+      {/* Composer Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white border border-[#E9E1DB] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5">
-            <div className="flex items-center justify-between pb-2 border-b border-[#E9E1DB]">
-              <h3 className="font-editorial-heading text-xl text-[#302B29]">
-                Tulis Surat Kecil
-              </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white border border-[#E9E1DB] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E9E1DB]">
+              <div>
+                <h3 className="font-editorial-heading text-xl text-[#302B29]">
+                  Tulis Surat Kecil
+                </h3>
+                <p className="text-xs text-[#8D817B] mt-0.5">
+                  Dari {user?.nickname || "Aufa"} untuk orang tersayang
+                </p>
+              </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1 text-[#8D817B] hover:text-[#302B29]"
+                className="p-1.5 text-[#8D817B] hover:text-[#302B29] rounded-lg"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleSendNote} className="space-y-4">
-              {/* Emoji Picker */}
+              {/* Recipient Picker */}
               <div className="space-y-1.5">
                 <label className="text-xs font-editorial-body text-[#78655F]">
-                  Pilih Stiker Emoji
+                  Penerima Surat:
                 </label>
-                <div className="flex gap-2">
-                  {EMOJI_OPTIONS.map((em) => (
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setRecipientChoice("Anathia")}
+                    className={`py-2 px-3 rounded-2xl border text-xs font-editorial-body flex items-center justify-center gap-2 transition-all ${
+                      recipientChoice === "Anathia"
+                        ? "bg-[#F1EBE4] border-[#CFA6A3] text-[#302B29] font-medium shadow-xs"
+                        : "bg-[#FAF8F5] border-[#E9E1DB] text-[#8D817B]"
+                    }`}
+                  >
+                    <span>Untuk Anathia ♡</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRecipientChoice("Aufa")}
+                    className={`py-2 px-3 rounded-2xl border text-xs font-editorial-body flex items-center justify-center gap-2 transition-all ${
+                      recipientChoice === "Aufa"
+                        ? "bg-[#F1EBE4] border-[#CFA6A3] text-[#302B29] font-medium shadow-xs"
+                        : "bg-[#FAF8F5] border-[#E9E1DB] text-[#8D817B]"
+                    }`}
+                  >
+                    <span>Untuk Aufa ♡</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Seal Choice */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-editorial-body text-[#78655F]">
+                  Pilih Stiker Segel Lilin (*Wax Seal*)
+                </label>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  {SEAL_OPTIONS.map((item) => (
                     <button
                       type="button"
-                      key={em}
-                      onClick={() => setSelectedEmoji(em)}
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg transition-transform ${
-                        selectedEmoji === em
-                          ? "bg-[#F1EBE4] border border-[#CFA6A3] scale-110"
-                          : "hover:bg-[#FAF8F5]"
+                      key={item.emoji}
+                      onClick={() => setSelectedEmoji(item.emoji)}
+                      className={`p-2 rounded-2xl border text-center transition-transform flex flex-col items-center gap-1 ${
+                        selectedEmoji === item.emoji
+                          ? "bg-[#F1EBE4] border-[#CFA6A3] scale-105 shadow-xs"
+                          : "bg-[#FAF8F5] border-[#E9E1DB] hover:bg-[#F1EBE4]/50"
                       }`}
                     >
-                      {em}
+                      <span className="text-xl">{item.emoji}</span>
+                      <span className="text-[9px] text-[#78655F] leading-tight font-editorial-body">
+                        {item.label}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -311,7 +539,7 @@ export default function LittleNotesPage() {
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Contoh: Terima kasih untuk hari ini 🤍"
+                  placeholder="Contoh: Terima kasih sudah selalu ada 🤍"
                   className="w-full px-4 py-2.5 bg-[#FAF8F5] border border-[#E9E1DB] rounded-2xl text-xs sm:text-sm text-[#302B29] focus:outline-hidden focus:border-[#CFA6A3]"
                 />
               </div>
@@ -319,32 +547,32 @@ export default function LittleNotesPage() {
               {/* Message */}
               <div className="space-y-1.5">
                 <label className="text-xs font-editorial-body text-[#78655F]">
-                  Isi Pesan Surat *
+                  Isi Surat *
                 </label>
                 <textarea
                   rows={4}
                   required
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Tuliskan isi hatimu, pesan kejutan, atau hal manis..."
-                  className="w-full p-3 bg-[#FAF8F5] border border-[#E9E1DB] rounded-2xl text-xs sm:text-sm text-[#302B29] focus:outline-hidden focus:border-[#CFA6A3] resize-none"
+                  placeholder="Tuliskan ungkapan hatimu, cerita manis, atau pesan rahasia..."
+                  className="w-full p-3.5 bg-[#FAF8F5] border border-[#E9E1DB] rounded-2xl text-xs sm:text-sm text-[#302B29] focus:outline-hidden focus:border-[#CFA6A3] resize-none leading-relaxed font-editorial-body"
                 />
               </div>
 
-              {/* Optional Future Unlock Date */}
-              <div className="space-y-1.5">
+              {/* Lock Date */}
+              <div className="space-y-1.5 p-3 rounded-2xl bg-[#FAF8F5] border border-[#E9E1DB]">
                 <label className="text-xs font-editorial-body text-[#78655F] flex items-center gap-1.5">
-                  <Lock className="w-3 h-3 text-[#CFA6A3]" />
-                  <span>Kunci Hingga Tanggal Tertentu (Opsional)</span>
+                  <Lock className="w-3.5 h-3.5 text-[#CFA6A3]" />
+                  <span>Kunci Surat (Kapsul Waktu Opsional)</span>
                 </label>
                 <input
                   type="datetime-local"
                   value={unlockAt}
                   onChange={(e) => setUnlockAt(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#FAF8F5] border border-[#E9E1DB] rounded-2xl text-xs sm:text-sm text-[#302B29] focus:outline-hidden focus:border-[#CFA6A3]"
+                  className="w-full px-3 py-2 bg-white border border-[#E9E1DB] rounded-xl text-xs text-[#302B29] focus:outline-hidden focus:border-[#CFA6A3]"
                 />
                 <p className="text-[10px] text-[#8D817B]">
-                  Bila diisi, pasanganmu tidak bisa membuka surat ini sebelum tanggal yang ditentukan.
+                  Bila ditentukan, surat akan tersegel dan hanya bisa dibuka setelah tanggal tersebut.
                 </p>
               </div>
 
@@ -359,10 +587,10 @@ export default function LittleNotesPage() {
                 <button
                   type="submit"
                   disabled={isSending}
-                  className="flex-1 py-2.5 rounded-full bg-[#CFA6A3] hover:bg-[#B88582] text-white text-xs font-editorial-body font-medium transition-colors flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2.5 rounded-full bg-gradient-to-r from-[#CFA6A3] to-[#B88582] hover:opacity-95 text-white text-xs font-editorial-body font-medium transition-all shadow-md shadow-[#CFA6A3]/30 flex items-center justify-center gap-1.5"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>{isSending ? "Mengirim..." : "Kirim Surat"}</span>
+                  <span>{isSending ? "Memasukkan Amplop..." : "Kirim Surat"}</span>
                 </button>
               </div>
             </form>
