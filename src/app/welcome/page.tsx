@@ -66,9 +66,9 @@ export default function WelcomePage() {
       {/* Main Hero Section */}
       <main className="relative z-10 max-w-5xl mx-auto px-6 py-8 sm:py-16 flex flex-col items-center text-center">
         {/* Soft tag */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F1EBE4] border border-[#E9E1DB] text-xs text-[#78655F] font-editorial-body mb-8 animate-in fade-in duration-700">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F1EBE4] border border-[#E9E1DB] text-xs text-[#78655F] font-editorial-body mb-8 animate-in fade-in duration-700 shadow-2xs">
           <Sparkles className="w-3.5 h-3.5 text-[#CFA6A3]" />
-          <span>Ruang Pribadi untuk Dua Orang</span>
+          <span>Ruang Pribadi Aufa &amp; Anathia ♡</span>
         </div>
 
         {/* Title */}

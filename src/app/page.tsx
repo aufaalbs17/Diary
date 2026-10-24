@@ -16,9 +16,12 @@ import {
   ArrowRight,
   Heart,
   Quote,
+  PenTool,
+  Mail,
+  Book,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { DiaryStats, Memory, MOODS } from "@/lib/types";
+import { DiaryStats, Memory, MOODS, CATEGORIES } from "@/lib/types";
 import { getDiaryStats, getMemories, getRandomMemory } from "@/lib/store";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
@@ -70,21 +73,49 @@ export default function HomePage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-12">
       {/* 1. Welcome Greeting Section */}
-      <section className="text-center sm:text-left flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-[#E9E1DB]/70">
+      <section className="relative text-center sm:text-left flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-8 border-b border-[#E9E1DB]/70">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F1EBE4] text-[#78655F] text-xs font-editorial-body mb-3">
-            <span>{space?.name || "Ruang Kecil Kita"}</span>
+          {/* Personalized couple pill */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F1EBE4] border border-[#E9E1DB] text-[#78655F] text-xs font-editorial-body mb-3 shadow-2xs">
+            <span className="font-medium text-[#302B29]">Aufa</span>
             <span className="text-[#CFA6A3]">♡</span>
-            <span>
-              {user?.nickname || "Kita"} & {partner?.nickname || "Kamu"}
-            </span>
+            <span className="font-medium text-[#302B29]">Anathia</span>
+            <span className="text-[#8D817B]/60">•</span>
+            <span className="text-[#8D817B]">{space?.name || "Ruang Kecil Kita"}</span>
           </div>
+
           <h1 className="font-editorial-heading text-3xl sm:text-5xl font-normal text-[#302B29] tracking-tight">
             Hello, welcome to our little space ♡
           </h1>
           <p className="font-editorial-quote text-lg sm:text-xl text-[#78655F] italic mt-2">
             &ldquo;Karena setiap momen kecil punya cerita yang layak dikenang.&rdquo;
           </p>
+
+          {/* Quick inspiration chips */}
+          <div className="flex flex-wrap items-center gap-2 mt-4 pt-1">
+            <span className="text-xs text-[#8D817B] font-editorial-body">Aktivitas Cepat:</span>
+            <Link
+              href="/diary/new"
+              className="text-xs px-3 py-1 bg-white hover:bg-[#F1EBE4] text-[#78655F] hover:text-[#302B29] rounded-full border border-[#E9E1DB] transition-all flex items-center gap-1 shadow-2xs"
+            >
+              <PenTool className="w-3 h-3 text-[#CFA6A3]" />
+              <span>Tulis Cerita Hari Ini</span>
+            </Link>
+            <Link
+              href="/notes"
+              className="text-xs px-3 py-1 bg-white hover:bg-[#F1EBE4] text-[#78655F] hover:text-[#302B29] rounded-full border border-[#E9E1DB] transition-all flex items-center gap-1 shadow-2xs"
+            >
+              <Mail className="w-3 h-3 text-[#CFA6A3]" />
+              <span>Kirim Surat Kecil 💌</span>
+            </Link>
+            <Link
+              href="/book"
+              className="text-xs px-3 py-1 bg-white hover:bg-[#F1EBE4] text-[#78655F] hover:text-[#302B29] rounded-full border border-[#E9E1DB] transition-all flex items-center gap-1 shadow-2xs"
+            >
+              <Book className="w-3 h-3 text-[#CFA6A3]" />
+              <span>Buka Buku Kenangan</span>
+            </Link>
+          </div>
         </div>
 
         {/* Quick Add and Random Memory Buttons */}
@@ -94,12 +125,12 @@ export default function HomePage() {
             className="flex items-center gap-2 px-4 py-2.5 bg-white border border-[#E9E1DB] hover:border-[#CFA6A3] text-[#78655F] hover:text-[#302B29] rounded-full text-xs sm:text-sm font-editorial-body transition-all shadow-xs active:scale-95"
           >
             <Shuffle className="w-3.5 h-3.5 text-[#CFA6A3]" />
-            <span>Kenangan Acak ✨</span>
+            <span className="whitespace-nowrap">Kenangan Acak ✨</span>
           </button>
 
           <Link
             href="/diary/new"
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#CFA6A3] hover:bg-[#B88582] text-white rounded-full text-xs sm:text-sm font-editorial-body font-medium transition-all shadow-md shadow-[#CFA6A3]/30 active:scale-95"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#CFA6A3] to-[#B88582] hover:opacity-95 text-white rounded-full text-xs sm:text-sm font-editorial-body font-medium transition-all shadow-md shadow-[#CFA6A3]/30 active:scale-95 whitespace-nowrap"
           >
             <Plus className="w-4 h-4" />
             <span>+ Tambah Cerita Baru</span>
@@ -109,8 +140,8 @@ export default function HomePage() {
 
       {/* 2. Our Memories Stats Section (No anniversary/dating counters!) */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-        <div className="paper-card p-5 sm:p-6 rounded-3xl flex flex-col justify-between">
-          <div className="w-10 h-10 rounded-2xl bg-[#F1EBE4] text-[#78655F] flex items-center justify-center mb-4">
+        <div className="paper-card p-5 sm:p-6 rounded-3xl flex flex-col justify-between group">
+          <div className="w-10 h-10 rounded-2xl bg-[#F1EBE4] text-[#78655F] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
             <BookOpen className="w-5 h-5 text-[#CFA6A3]" />
           </div>
           <div>
@@ -123,8 +154,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="paper-card p-5 sm:p-6 rounded-3xl flex flex-col justify-between">
-          <div className="w-10 h-10 rounded-2xl bg-[#F1EBE4] text-[#78655F] flex items-center justify-center mb-4">
+        <div className="paper-card p-5 sm:p-6 rounded-3xl flex flex-col justify-between group">
+          <div className="w-10 h-10 rounded-2xl bg-[#F1EBE4] text-[#78655F] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
             <ImageIcon className="w-5 h-5 text-[#CFA6A3]" />
           </div>
           <div>
@@ -137,8 +168,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="paper-card p-5 sm:p-6 rounded-3xl flex flex-col justify-between">
-          <div className="w-10 h-10 rounded-2xl bg-[#F1EBE4] text-[#78655F] flex items-center justify-center mb-4">
+        <div className="paper-card p-5 sm:p-6 rounded-3xl flex flex-col justify-between group">
+          <div className="w-10 h-10 rounded-2xl bg-[#F1EBE4] text-[#78655F] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
             <Video className="w-5 h-5 text-[#CFA6A3]" />
           </div>
           <div>
@@ -151,8 +182,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="paper-card p-5 sm:p-6 rounded-3xl flex flex-col justify-between">
-          <div className="w-10 h-10 rounded-2xl bg-[#F1EBE4] text-[#78655F] flex items-center justify-center mb-4">
+        <div className="paper-card p-5 sm:p-6 rounded-3xl flex flex-col justify-between group">
+          <div className="w-10 h-10 rounded-2xl bg-[#F1EBE4] text-[#78655F] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
             <MapPin className="w-5 h-5 text-[#CFA6A3]" />
           </div>
           <div>
@@ -185,9 +216,9 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="paper-card rounded-3xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 group">
+          <div className="paper-card rounded-3xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 group border border-[#E9E1DB]">
             {/* Cover image */}
-            <div className="relative lg:col-span-7 h-72 sm:h-96 lg:h-auto overflow-hidden">
+            <div className="relative lg:col-span-7 h-72 sm:h-96 lg:h-auto overflow-hidden bg-[#F1EBE4]">
               <Image
                 src={featuredMemory.cover_image_url || "/images/hero.jpg"}
                 alt={featuredMemory.title}
@@ -254,12 +285,12 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* 4. Recent Memories Section */}
+      {/* 4. Recent Memories Section (Polaroid Scrapbook Aesthetic) */}
       <section className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="font-editorial-heading text-xl sm:text-2xl font-normal text-[#302B29]">
-              Cerita Terbaru
+              Cerita Terbaru Kita
             </h2>
             <p className="text-xs text-[#8D817B] font-editorial-body mt-0.5">
               Momen-momen terakhir yang kita tulis bersama.
@@ -269,7 +300,7 @@ export default function HomePage() {
             href="/diary"
             className="text-xs font-editorial-body text-[#78655F] hover:text-[#302B29] flex items-center gap-1 group"
           >
-            <span>Semua Cerita</span>
+            <span>Semua Cerita ({stats.totalMemories})</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
@@ -279,8 +310,11 @@ export default function HomePage() {
             <Link
               key={mem.id}
               href={`/diary/${mem.id}`}
-              className="paper-card rounded-3xl overflow-hidden flex flex-col group transition-all"
+              className="paper-card rounded-3xl overflow-hidden flex flex-col group transition-all relative border border-[#E9E1DB] hover:-translate-y-1 hover:shadow-xl hover:shadow-[#78655F]/10"
             >
+              {/* Subtle washi-tape accent */}
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-3 bg-[#E9E1DB]/70 border border-[#FAF8F5] rounded-xs opacity-75 z-20 pointer-events-none transform -rotate-1" />
+
               {/* Photo */}
               <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#F1EBE4]">
                 <Image
@@ -290,12 +324,12 @@ export default function HomePage() {
                   className="object-cover group-hover:scale-104 transition-transform duration-500"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 />
-                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] font-editorial-body text-[#302B29] flex items-center gap-1">
+                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-[11px] font-editorial-body text-[#302B29] flex items-center gap-1 z-10">
                   <span>{MOODS[mem.mood]?.emoji}</span>
                   <span>{MOODS[mem.mood]?.label}</span>
                 </div>
                 {mem.is_favorite && (
-                  <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-[#CFA6A3]">
+                  <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-[#CFA6A3] z-10">
                     <Heart className="w-3.5 h-3.5 fill-[#CFA6A3]" />
                   </div>
                 )}
@@ -322,9 +356,9 @@ export default function HomePage() {
                 </div>
 
                 <div className="pt-4 mt-4 border-t border-[#E9E1DB]/60 flex items-center justify-between text-[11px] text-[#8D817B]">
-                  <span>{mem.media.length} foto / media</span>
-                  <span className="text-[#CFA6A3] group-hover:translate-x-1 transition-transform">
-                    Baca →
+                  <span>Oleh {mem.author_name}</span>
+                  <span className="text-[#CFA6A3] group-hover:translate-x-1 transition-transform font-medium">
+                    Baca Cerita →
                   </span>
                 </div>
               </div>
@@ -340,7 +374,7 @@ export default function HomePage() {
           &ldquo;Beberapa momen terlalu indah untuk sekadar lewat begitu saja.&rdquo;
         </p>
         <p className="font-editorial-body text-xs text-[#8D817B] mt-4 uppercase tracking-widest font-mono">
-          Our Little Moments 🤍
+          Aufa &amp; Anathia 🤍 Our Little Moments
         </p>
       </section>
     </div>
