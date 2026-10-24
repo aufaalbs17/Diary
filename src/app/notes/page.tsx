@@ -41,9 +41,23 @@ export default function LittleNotesPage() {
   const [activeOpenedNote, setActiveOpenedNote] = useState<LittleNote | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<"all" | "to_anathia" | "to_aufa" | "locked">("all");
 
+  // Current user & Partner resolution (Strictly 2 members: Aufa & Anathia)
+  const currentNickname =
+    user?.nickname ||
+    user?.full_name ||
+    (user?.id === "user-2" ? "Anathia" : "Aufa");
+  const isAnathia =
+    user?.id === "user-2" ||
+    currentNickname.toLowerCase().includes("anathia");
+
+  const partnerNickname =
+    partner?.nickname ||
+    partner?.full_name ||
+    (isAnathia ? "Aufa" : "Anathia");
+  const partnerId = partner?.id || (isAnathia ? "user-1" : "user-2");
+
   // New Note Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [recipientChoice, setRecipientChoice] = useState<"Anathia" | "Aufa">("Anathia");
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [selectedEmoji, setSelectedEmoji] = useState("💌");
@@ -59,15 +73,6 @@ export default function LittleNotesPage() {
     }
     load();
   }, []);
-
-  // Update recipient choice based on active user
-  useEffect(() => {
-    if (user?.nickname?.toLowerCase().includes("anathia")) {
-      setRecipientChoice("Aufa");
-    } else {
-      setRecipientChoice("Anathia");
-    }
-  }, [user]);
 
   const handleCardClick = async (note: LittleNote) => {
     const isLocked = note.unlock_at && new Date(note.unlock_at) > new Date();
@@ -96,7 +101,7 @@ export default function LittleNotesPage() {
   const handleOpenComposer = (replyTo?: LittleNote) => {
     if (replyTo) {
       setTitle(`Balasan: ${replyTo.title}`);
-      setRecipientChoice(replyTo.sender_name === "Aufa" ? "Aufa" : "Anathia");
+      setMessage("");
       setActiveOpenedNote(null);
     } else {
       setTitle("");
@@ -114,14 +119,9 @@ export default function LittleNotesPage() {
 
     setIsSending(true);
     try {
-      const recipientUser =
-        recipientChoice === "Anathia"
-          ? { id: "user-2", nickname: "Anathia" }
-          : { id: "user-1", nickname: "Aufa" };
-
       const created = await sendLittleNote({
-        recipient_id: recipientUser.id,
-        recipient_name: recipientUser.nickname,
+        recipient_id: partnerId,
+        recipient_name: partnerNickname,
         title: title.trim(),
         message: message.trim(),
         emoji: selectedEmoji,
@@ -133,7 +133,7 @@ export default function LittleNotesPage() {
       setTitle("");
       setMessage("");
       setUnlockAt("");
-      success("Surat manis telah dimasukkan ke dalam amplop dan terkirim 💌");
+      success(`Surat manis telah dimasukkan ke dalam amplop untuk ${partnerNickname} 💌`);
     } catch (err) {
       error("Gagal mengirim surat.");
     } finally {
@@ -437,14 +437,21 @@ export default function LittleNotesPage() {
                 Lipat &amp; Simpan Kembali
               </button>
 
-              <button
-                type="button"
-                onClick={() => handleOpenComposer(activeOpenedNote)}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#CFA6A3] to-[#B88582] text-white text-xs font-editorial-body font-medium shadow-md shadow-[#CFA6A3]/30 hover:opacity-95 transition-opacity"
-              >
-                <Reply className="w-3.5 h-3.5" />
-                <span>Balas Surat Ini ✍️</span>
-              </button>
+              {activeOpenedNote.recipient_name?.toLowerCase() === currentNickname.toLowerCase() ? (
+                <button
+                  type="button"
+                  onClick={() => handleOpenComposer(activeOpenedNote)}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#CFA6A3] to-[#B88582] text-white text-xs font-editorial-body font-medium shadow-md shadow-[#CFA6A3]/30 hover:opacity-95 transition-opacity"
+                >
+                  <Reply className="w-3.5 h-3.5" />
+                  <span>Balas Surat Ini ✍️</span>
+                </button>
+              ) : (
+                <div className="flex items-center gap-1.5 text-xs text-[#8D817B] font-editorial-body">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#CFA6A3]" />
+                  <span>Surat ini telah kamu kirimkan untuk {activeOpenedNote.recipient_name}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -460,7 +467,7 @@ export default function LittleNotesPage() {
                   Tulis Surat Kecil
                 </h3>
                 <p className="text-xs text-[#8D817B] mt-0.5">
-                  Dari {user?.nickname || "Aufa"} untuk orang tersayang
+                  Dari <span className="font-medium text-[#302B29]">{currentNickname}</span> untuk <span className="font-medium text-[#B88582]">{partnerNickname} ♡</span>
                 </p>
               </div>
               <button
@@ -472,35 +479,20 @@ export default function LittleNotesPage() {
             </div>
 
             <form onSubmit={handleSendNote} className="space-y-4">
-              {/* Recipient Picker */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-editorial-body text-[#78655F]">
-                  Penerima Surat:
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setRecipientChoice("Anathia")}
-                    className={`py-2 px-3 rounded-2xl border text-xs font-editorial-body flex items-center justify-center gap-2 transition-all ${
-                      recipientChoice === "Anathia"
-                        ? "bg-[#F1EBE4] border-[#CFA6A3] text-[#302B29] font-medium shadow-xs"
-                        : "bg-[#FAF8F5] border-[#E9E1DB] text-[#8D817B]"
-                    }`}
-                  >
-                    <span>Untuk Anathia ♡</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRecipientChoice("Aufa")}
-                    className={`py-2 px-3 rounded-2xl border text-xs font-editorial-body flex items-center justify-center gap-2 transition-all ${
-                      recipientChoice === "Aufa"
-                        ? "bg-[#F1EBE4] border-[#CFA6A3] text-[#302B29] font-medium shadow-xs"
-                        : "bg-[#FAF8F5] border-[#E9E1DB] text-[#8D817B]"
-                    }`}
-                  >
-                    <span>Untuk Aufa ♡</span>
-                  </button>
+              {/* Recipient Display (Locked strictly to Partner - No self-sending) */}
+              <div className="p-3.5 rounded-2xl bg-[#FAF8F5] border border-[#E9E1DB] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-editorial-body text-[#78655F]">
+                    Penerima Surat:
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F1EBE4] border border-[#CFA6A3] text-xs font-medium text-[#302B29] shadow-2xs">
+                    <Heart className="w-3.5 h-3.5 text-[#CFA6A3] fill-[#CFA6A3]" />
+                    <span>Untuk {partnerNickname} ♡</span>
+                  </span>
                 </div>
+                <span className="text-[11px] text-[#8D817B] font-editorial-quote italic">
+                  Akun aktif: {currentNickname}
+                </span>
               </div>
 
               {/* Seal Choice */}
@@ -539,7 +531,7 @@ export default function LittleNotesPage() {
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Contoh: Terima kasih sudah selalu ada 🤍"
+                  placeholder={`Contoh: Terima kasih sudah selalu ada untukku, ${partnerNickname} 🤍`}
                   className="w-full px-4 py-2.5 bg-[#FAF8F5] border border-[#E9E1DB] rounded-2xl text-xs sm:text-sm text-[#302B29] focus:outline-hidden focus:border-[#CFA6A3]"
                 />
               </div>
@@ -554,7 +546,7 @@ export default function LittleNotesPage() {
                   required
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Tuliskan ungkapan hatimu, cerita manis, atau pesan rahasia..."
+                  placeholder={`Tuliskan ungkapan hatimu, cerita manis, atau pesan rahasia untuk ${partnerNickname}...`}
                   className="w-full p-3.5 bg-[#FAF8F5] border border-[#E9E1DB] rounded-2xl text-xs sm:text-sm text-[#302B29] focus:outline-hidden focus:border-[#CFA6A3] resize-none leading-relaxed font-editorial-body"
                 />
               </div>

@@ -399,13 +399,29 @@ export async function sendLittleNote(
   const activeUser = getActiveUser();
   const space = getSpace();
 
+  // Find partner (the other person in the 2-member space)
+  const partnerMember = space.members.find((m) => m.user_id !== activeUser.id);
+  const fallbackPartnerId = activeUser.id === "user-1" ? "user-2" : "user-1";
+  const fallbackPartnerNickname = activeUser.id === "user-1" ? "Anathia" : "Aufa";
+
+  const resolvedRecipientId =
+    note.recipient_id && note.recipient_id !== activeUser.id
+      ? note.recipient_id
+      : partnerMember?.user_id || fallbackPartnerId;
+
+  const resolvedRecipientName =
+    note.recipient_name &&
+    note.recipient_name.toLowerCase() !== (activeUser.nickname || activeUser.full_name).toLowerCase()
+      ? note.recipient_name
+      : partnerMember?.profile?.nickname || partnerMember?.profile?.full_name || fallbackPartnerNickname;
+
   const newNote: LittleNote = {
     id: `note-letter-${Date.now()}`,
     space_id: space.id,
     sender_id: activeUser.id,
     sender_name: activeUser.nickname || activeUser.full_name,
-    recipient_id: note.recipient_id,
-    recipient_name: note.recipient_name,
+    recipient_id: resolvedRecipientId,
+    recipient_name: resolvedRecipientName,
     title: note.title,
     message: note.message,
     emoji: note.emoji || "💌",
