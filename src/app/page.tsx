@@ -23,6 +23,8 @@ import {
   MessageCircle,
   Palette,
   Trash2,
+  Music,
+  LayoutGrid,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import confetti from "canvas-confetti";
@@ -58,6 +60,73 @@ const WASHI_TAPES = [
   "bg-gradient-to-r from-[#EAE6DF]/90 via-[#DDD6CC]/85 to-[#EAE6DF]/90 border-y border-[#C9C0B3]/60",
   "bg-gradient-to-r from-[#F5E6D8]/90 via-[#EED4BF]/85 to-[#F5E6D8]/90 border-y border-[#D6B59C]/60",
   "bg-gradient-to-r from-[#E5ECDE]/90 via-[#D3E0C9]/85 to-[#E5ECDE]/90 border-y border-[#B6CAAA]/60",
+];
+
+// Interactive Tutorial / Guide Steps for Aufa & Anathia's Couple Diary
+const TUTORIAL_STEPS = [
+  {
+    id: "step-1",
+    number: "01",
+    icon: BookOpen,
+    title: "Tulis & Abadikan Cerita",
+    description: "Klik tombol '+ Tulis Cerita Baru' untuk mengabadikan momen kencan manis, jalan-jalan, foto polaroid, mood emoji, lokasi pertemuan, dan playlist lagu Spotify berdua.",
+    badge: "Jurnal Kenangan",
+    actionType: "link",
+    actionLabel: "Tulis Cerita",
+    href: "/diary/new",
+  },
+  {
+    id: "step-2",
+    number: "02",
+    icon: Mail,
+    title: "Kirim & Balas Surat Kasih",
+    description: "Kirimkan surat cinta rahasia beramplop pink manis untuk pasanganmu. Buka amplop animasi lucu bersama dan balas surat secara instan langsung dari beranda.",
+    badge: "Surat Kasih 💌",
+    actionType: "envelope",
+    actionLabel: "Buka Amplop",
+  },
+  {
+    id: "step-3",
+    number: "03",
+    icon: Camera,
+    title: "Jelajahi Galeri Foto Estetik",
+    description: "Semua foto berdua tersimpan rapi dengan 3 mode tampilan estetik: Polaroid Scrapbook vintage, lembaran klise 35mm Filmstrip, atau Cinema Lightbox layar penuh.",
+    badge: "Galeri Foto",
+    actionType: "link",
+    actionLabel: "Buka Galeri",
+    href: "/gallery",
+  },
+  {
+    id: "step-4",
+    number: "04",
+    icon: Music,
+    title: "Pilihan Musik Suasana",
+    description: "Nyalakan alunan melodi latar yang menenangkan saat membaca jurnal bersama. Tersedia 8 melodi lembut (Piano, Kafe Lofi, Ombak, Hujan) lewat tombol di kanan atas navbar.",
+    badge: "Shortcut: Tekan 'M'",
+    actionType: "info",
+    actionLabel: "8 Melodi 🎵",
+  },
+  {
+    id: "step-5",
+    number: "05",
+    icon: LayoutGrid,
+    title: "Jelajahi Fitur Tambahan",
+    description: "Klik tombol bulat (⊞) di navbar kanan atas untuk membuka Kalender Kenangan per tanggal, garis waktu kronologis Timeline Bersama, dan daftar impian Bucket List.",
+    badge: "Tombol Bulat di Navbar",
+    actionType: "link",
+    actionLabel: "Buka Kalender",
+    href: "/calendar",
+  },
+  {
+    id: "step-6",
+    number: "06",
+    icon: Palette,
+    title: "Ganti Sampul & Atur Profil",
+    description: "Kustomisasi foto polaroid sampul depan, pilih tema warna kesukaan, dan perbarui foto profil maupun bio akun masing-masing (Aufa & Anathia) secara terproteksi.",
+    badge: "Personalisasi",
+    actionType: "customizer",
+    actionLabel: "Ganti Sampul",
+  },
 ];
 
 export default function HomePage() {
@@ -564,6 +633,137 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
+
+      {/* 2.5. Editorial Scrapbook Guide: Panduan & Tata Cara Pemakaian Web */}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-40px" }}
+        transition={{ duration: 0.6 }}
+        className="relative overflow-hidden rounded-3xl sm:rounded-4xl bg-gradient-to-br from-[#FFFDF9] via-[#FAF5F0] to-[#F5ECE5] border border-[#E9E1DB] p-6 sm:p-10 shadow-lg shadow-[#78655F]/5 space-y-8"
+      >
+        {/* Top Washi Tape Accent */}
+        <div
+          className="absolute -top-3 left-1/2 -translate-x-1/2 w-36 h-6 bg-gradient-to-r from-[#F8DEDC]/90 via-[#F3C5C0]/85 to-[#F8DEDC]/90 border-y border-[#E2AEAA]/60 pointer-events-none shadow-2xs rotate-[0.5deg] z-20"
+          style={{
+            clipPath:
+              "polygon(4% 0%, 96% 0%, 100% 15%, 96% 35%, 100% 55%, 96% 75%, 100% 100%, 0% 100%, 4% 75%, 0% 55%, 4% 35%, 0% 15%)",
+          }}
+        />
+
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#E9E1DB]/80 pb-5">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 border border-[#E9E1DB] shadow-2xs text-[11px] font-mono uppercase tracking-wider text-[#78655F]">
+              <Sparkles className="w-3.5 h-3.5 text-[#CFA6A3]" />
+              <span>Panduan Ruang Kenangan Kita</span>
+            </div>
+            <h2 className="font-editorial-heading text-2xl sm:text-3xl lg:text-4xl font-normal text-[#302B29] tracking-tight">
+              Tata Cara Mengisi &amp; Menikmati Web Bersama
+            </h2>
+            <p className="font-editorial-body text-xs sm:text-sm text-[#78655F] max-w-2xl leading-relaxed">
+              Selamat datang di ruang rahasia kita berdua! Ikuti langkah-langkah manis di bawah ini untuk mengabadikan momen, bertukar pesan cinta, dan menjelajahi setiap fitur istimewa kami.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-xs font-mono text-[#8D817B] bg-white/80 px-3.5 py-1.5 rounded-full border border-[#E9E1DB] shadow-2xs">
+              6 Panduan Cepat
+            </span>
+          </div>
+        </div>
+
+        {/* Step-by-Step Interactive Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+          {TUTORIAL_STEPS.map((step) => {
+            const Icon = step.icon;
+            return (
+              <motion.div
+                key={step.id}
+                whileHover={{ y: -4, scale: 1.015 }}
+                transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                className="group relative bg-white/95 backdrop-blur-xs rounded-3xl p-5 sm:p-6 border border-[#E9E1DB] hover:border-[#CFA6A3] shadow-sm hover:shadow-md transition-all flex flex-col justify-between overflow-hidden"
+              >
+                {/* Subtle Step Number Watermark */}
+                <span className="absolute top-3 right-4 font-editorial-heading text-3xl sm:text-4xl font-bold text-[#E9E1DB]/50 group-hover:text-[#CFA6A3]/30 transition-colors pointer-events-none select-none">
+                  {step.number}
+                </span>
+
+                <div className="space-y-3 relative z-10">
+                  <div className="w-11 h-11 rounded-2xl bg-[#FAF5F0] border border-[#E9E1DB] text-[#CFA6A3] flex items-center justify-center group-hover:scale-105 group-hover:bg-[#CFA6A3] group-hover:text-white transition-all shadow-2xs">
+                    <Icon className="w-5 h-5" />
+                  </div>
+
+                  <div>
+                    <h3 className="font-editorial-heading text-lg font-medium text-[#302B29] group-hover:text-[#B88582] transition-colors flex items-center gap-2">
+                      <span>{step.title}</span>
+                    </h3>
+                    <p className="font-editorial-body text-xs sm:text-[13px] text-[#78655F] mt-1.5 leading-relaxed">
+                      {step.description}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-4 mt-4 border-t border-[#E9E1DB]/60 flex items-center justify-between text-xs font-editorial-body">
+                  <span className="text-[11px] font-mono text-[#8D817B]">
+                    {step.badge}
+                  </span>
+                  {step.actionType === "link" ? (
+                    <Link
+                      href={step.href!}
+                      className="inline-flex items-center gap-1 font-medium text-[#CFA6A3] group-hover:text-[#B88582] group-hover:translate-x-1 transition-all"
+                    >
+                      <span>{step.actionLabel}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  ) : step.actionType === "customizer" ? (
+                    <button
+                      onClick={() => setIsCustomizerOpen(true)}
+                      className="inline-flex items-center gap-1 font-medium text-[#CFA6A3] group-hover:text-[#B88582] group-hover:translate-x-1 transition-all cursor-pointer"
+                    >
+                      <span>{step.actionLabel}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  ) : step.actionType === "envelope" ? (
+                    <button
+                      onClick={handleOpenEnvelope}
+                      className="inline-flex items-center gap-1 font-medium text-[#CFA6A3] group-hover:text-[#B88582] group-hover:translate-x-1 transition-all cursor-pointer"
+                    >
+                      <span>{step.actionLabel}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 font-medium text-[#CFA6A3]">
+                      <span>{step.actionLabel}</span>
+                    </span>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Quick Tips Callout Banner at bottom */}
+        <div className="rounded-2xl bg-white/80 border border-[#E9E1DB] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-editorial-body text-[#78655F] shadow-2xs">
+          <div className="flex items-center gap-3">
+            <span className="text-xl">💡</span>
+            <div>
+              <p className="font-medium text-[#302B29]">
+                Tips Pintar: Gunakan Tombol Pintas Keyboard
+              </p>
+              <p className="text-[11px] text-[#8D817B]">
+                Tekan tombol <kbd className="px-1.5 py-0.5 rounded-md bg-[#FAF5F0] border border-[#E9E1DB] font-mono text-[10px] text-[#302B29] font-bold">M</kbd> kapan saja untuk membuka pilihan melodi musik, atau tombol <kbd className="px-1.5 py-0.5 rounded-md bg-[#FAF5F0] border border-[#E9E1DB] font-mono text-[10px] text-[#302B29] font-bold">ESC</kbd> untuk menutup jendela pop-up.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/diary/new"
+            className="px-5 py-2.5 rounded-full bg-[#CFA6A3] hover:bg-[#B88582] text-white font-medium shrink-0 text-center shadow-sm transition-all active:scale-95"
+          >
+            Mulai Catat Sekarang ✍️
+          </Link>
+        </div>
+      </motion.section>
 
       {/* 3. Featured Memory Scrapbook Folio with Smooth Hover & Quick View */}
       {featuredMemory && (
