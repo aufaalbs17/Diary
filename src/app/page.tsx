@@ -383,10 +383,8 @@ export default function HomePage() {
                   alt={coverPhoto.title || "Aufa & Anathia"}
                   fill
                   className="object-cover object-top group-hover:scale-105 transition-transform duration-300 ease-out"
-                  sizes="300px"
                   priority
-                  loading="eager"
-                  unoptimized
+                  sizes="(max-width: 640px) 260px, 300px"
                 />
                 <div className="absolute top-2 right-2 px-2.5 py-0.5 rounded-full bg-white/90 backdrop-blur-xs text-[10px] font-editorial-body text-[#302B29] border border-[#E9E1DB] flex items-center gap-1 shadow-xs">
                   <span>{coverPhoto.badgeEmoji || "🛍️"}</span>

@@ -49,6 +49,7 @@ export const metadata: Metadata = {
 
 import { PageTransition } from "@/components/ui/page-transition";
 import { ThemeProvider } from "@/lib/theme-context";
+import { AuthGuard } from "@/components/auth/auth-guard";
 
 export default function RootLayout({
   children,
@@ -60,22 +61,28 @@ export default function RootLayout({
       lang="id"
       className={`${playfair.variable} ${dmSans.variable} ${cormorant.variable} h-full antialiased`}
     >
+      <head>
+        <link rel="preconnect" href="https://images.unsplash.com" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+      </head>
       <body className="min-h-full flex flex-col bg-[#FAF8F5] text-[#302B29] selection:bg-[#CFA6A3]/30 selection:text-[#302B29]">
         <ThemeProvider>
           <AuthProvider>
-            <ToastProvider>
-              <Suspense fallback={null}>
-                <Navbar />
-              </Suspense>
-              <main className="flex-1 pb-20 lg:pb-8 flex flex-col">
-                <Suspense fallback={<div className="p-8 text-center text-xs text-[#8D817B]">Memuat...</div>}>
-                  <PageTransition>{children}</PageTransition>
+            <AuthGuard>
+              <ToastProvider>
+                <Suspense fallback={null}>
+                  <Navbar />
                 </Suspense>
-              </main>
-              <Suspense fallback={null}>
-                <MobileNav />
-              </Suspense>
-            </ToastProvider>
+                <main className="flex-1 pb-20 lg:pb-8 flex flex-col">
+                  <Suspense fallback={<div className="p-8 text-center text-xs text-[#8D817B]">Memuat...</div>}>
+                    <PageTransition>{children}</PageTransition>
+                  </Suspense>
+                </main>
+                <Suspense fallback={null}>
+                  <MobileNav />
+                </Suspense>
+              </ToastProvider>
+            </AuthGuard>
           </AuthProvider>
         </ThemeProvider>
       </body>

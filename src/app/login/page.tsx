@@ -36,6 +36,13 @@ export default function LoginPage() {
   const [manualEmail, setManualEmail] = useState("");
   const [manualPassword, setManualPassword] = useState("");
 
+  // If already authenticated, redirect to home
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/");
+    }
+  }, [isAuthenticated, router]);
+
   const aufaMember = space?.members.find((m) => m.user_id === "user-1");
   const anathiaMember = space?.members.find((m) => m.user_id === "user-2");
 

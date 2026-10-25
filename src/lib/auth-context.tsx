@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<Profile | null>(null);
   const [space, setSpace] = useState<Space | null>(null);
   const [partner, setPartner] = useState<Profile | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const reloadData = useCallback(() => {
@@ -55,12 +55,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         typeof window !== "undefined" &&
         localStorage.getItem("olm_logged_out") === "true";
 
-      const currentUser = getActiveUser();
-      setSpace(currentSpace);
-      setUser(currentUser);
-
       const hasValidSession = Boolean(session?.userId) && !isLoggedOut;
       setIsAuthenticated(hasValidSession);
+
+      const currentUser = hasValidSession ? getActiveUser() : null;
+      setSpace(currentSpace);
+      setUser(currentUser);
 
       const partnerMember = currentSpace.members.find(
         (m) => m.user_id !== currentUser?.id

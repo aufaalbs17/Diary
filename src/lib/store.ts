@@ -66,21 +66,7 @@ function setLocal<T>(key: string, value: T): void {
 // ----------------------------------------------------------------------------
 
 export function getAuthSession(): AuthSession | null {
-  // Check if session exists in localStorage
-  const session = getLocal<AuthSession | null>(STORAGE_KEYS.AUTH_SESSION, null);
-  // Default to active user-1 on first fresh visit if not explicitly logged out
-  if (!session && typeof window !== "undefined") {
-    const isExplicitlyLoggedOut = localStorage.getItem("olm_logged_out") === "true";
-    if (!isExplicitlyLoggedOut) {
-      const defaultSession: AuthSession = {
-        userId: "user-1",
-        loggedInAt: new Date().toISOString(),
-      };
-      setLocal(STORAGE_KEYS.AUTH_SESSION, defaultSession);
-      return defaultSession;
-    }
-  }
-  return session;
+  return getLocal<AuthSession | null>(STORAGE_KEYS.AUTH_SESSION, null);
 }
 
 export function setAuthSession(session: AuthSession | null): void {
@@ -89,10 +75,13 @@ export function setAuthSession(session: AuthSession | null): void {
     setActiveUser(session.userId);
     if (typeof window !== "undefined") {
       localStorage.removeItem("olm_logged_out");
+      document.cookie = "olm_authenticated=true; path=/; max-age=2592000; SameSite=Lax";
     }
   } else {
     if (typeof window !== "undefined") {
       localStorage.setItem("olm_logged_out", "true");
+      document.cookie = "olm_authenticated=; path=/; max-age=0; SameSite=Lax";
+      document.cookie = "olm_session=; path=/; max-age=0; SameSite=Lax";
     }
   }
   if (typeof window !== "undefined") {
