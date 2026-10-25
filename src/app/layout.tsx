@@ -47,6 +47,9 @@ export const metadata: Metadata = {
   },
 };
 
+import { PageTransition } from "@/components/ui/page-transition";
+import { ThemeProvider } from "@/lib/theme-context";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -58,22 +61,26 @@ export default function RootLayout({
       className={`${playfair.variable} ${dmSans.variable} ${cormorant.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#FAF8F5] text-[#302B29] selection:bg-[#CFA6A3]/30 selection:text-[#302B29]">
-        <AuthProvider>
-          <ToastProvider>
-            <Suspense fallback={null}>
-              <Navbar />
-            </Suspense>
-            <main className="flex-1 pb-20 lg:pb-8">
-              <Suspense fallback={<div className="p-8 text-center text-xs text-[#8D817B]">Memuat...</div>}>
-                {children}
+        <ThemeProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <Suspense fallback={null}>
+                <Navbar />
               </Suspense>
-            </main>
-            <Suspense fallback={null}>
-              <MobileNav />
-            </Suspense>
-          </ToastProvider>
-        </AuthProvider>
+              <main className="flex-1 pb-20 lg:pb-8 flex flex-col">
+                <Suspense fallback={<div className="p-8 text-center text-xs text-[#8D817B]">Memuat...</div>}>
+                  <PageTransition>{children}</PageTransition>
+                </Suspense>
+              </main>
+              <Suspense fallback={null}>
+                <MobileNav />
+              </Suspense>
+            </ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
 }
+
+

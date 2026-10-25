@@ -10,11 +10,12 @@ import {
   Image as ImageIcon,
   Mail,
 } from "lucide-react";
+import { motion } from "motion/react";
 
 export function MobileNav() {
   const pathname = usePathname();
 
-  if (pathname === "/welcome" || pathname.startsWith("/auth")) {
+  if (pathname === "/welcome" || pathname === "/login" || pathname.startsWith("/auth")) {
     return null;
   }
 
@@ -38,14 +39,19 @@ export function MobileNav() {
 
           if (item.isAction) {
             return (
-              <Link
+              <motion.div
                 key={item.href}
-                href={item.href}
-                className="relative -top-4 w-12 h-12 rounded-full bg-[#CFA6A3] hover:bg-[#B88582] text-white flex items-center justify-center shadow-lg shadow-[#CFA6A3]/50 transition-transform active:scale-90"
-                aria-label="Tulis Cerita Baru"
+                whileTap={{ scale: 0.88 }}
+                whileHover={{ scale: 1.05 }}
               >
-                <Plus className="w-6 h-6 stroke-[2.5]" />
-              </Link>
+                <Link
+                  href={item.href}
+                  className="relative -top-4 w-12 h-12 rounded-full bg-gradient-to-tr from-[#CFA6A3] to-[#B88582] text-white flex items-center justify-center shadow-lg shadow-[#CFA6A3]/50"
+                  aria-label="Tulis Cerita Baru"
+                >
+                  <Plus className="w-6 h-6 stroke-[2.5]" />
+                </Link>
+              </motion.div>
             );
           }
 
@@ -53,13 +59,25 @@ export function MobileNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center gap-1 w-14 py-1 rounded-xl transition-colors ${
+              className={`relative flex flex-col items-center justify-center gap-1 w-14 py-1.5 rounded-xl transition-colors ${
                 isActive
-                  ? "text-[#CFA6A3] font-medium"
+                  ? "text-[#302B29] font-medium"
                   : "text-[#8D817B] hover:text-[#302B29]"
               }`}
             >
-              <Icon className="w-5 h-5" />
+              {isActive && (
+                <motion.div
+                  layoutId="mobile-nav-indicator"
+                  className="absolute -top-1 w-8 h-1 bg-[#CFA6A3] rounded-full"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <motion.div
+                animate={isActive ? { scale: [1, 1.15, 1] } : { scale: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Icon className={`w-5 h-5 ${isActive ? "text-[#CFA6A3]" : ""}`} />
+              </motion.div>
               <span className="text-[10px] font-editorial-body">{item.label}</span>
             </Link>
           );

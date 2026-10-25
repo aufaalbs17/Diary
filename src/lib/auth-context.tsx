@@ -1,13 +1,17 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { Profile, Space, SpaceMember } from "./types";
 import {
   getActiveUser,
+  getAuthSession,
   getSpace,
   joinSpaceByInviteCode,
   saveSpace,
   setActiveUser as setStoreActiveUser,
+  setAuthSession,
+  updateUserProfile as storeUpdateUserProfile,
+  verifyCredentials,
 } from "./store";
 import { createClient, isSupabaseConfigured } from "./supabase/client";
 
@@ -16,12 +20,21 @@ interface AuthContextType {
   space: Space | null;
   partner: Profile | null;
   allMembers: SpaceMember[];
+  isAuthenticated: boolean;
+  isLoading: boolean;
   isConfiguredWithSupabase: boolean;
+  login: (
+    identifier: string,
+    pin: string
+  ) => Promise<{ success: boolean; message: string; user?: Profile }>;
+  logout: () => Promise<void>;
   switchUser: (userId: string) => void;
-  updateProfile: (profile: Partial<Profile>) => void;
+  updateProfile: (
+    profile: Partial<Profile>,
+    targetUserId?: string
+  ) => Promise<{ success: boolean; message: string }>;
   updateSpaceName: (name: string) => void;
   joinSpace: (code: string) => { success: boolean; message: string };
-  logout: () => void;
   refresh: () => void;
 }
 
@@ -31,46 +44,168 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<Profile | null>(null);
   const [space, setSpace] = useState<Space | null>(null);
   const [partner, setPartner] = useState<Profile | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const reloadData = () => {
-    const currentSpace = getSpace();
-    const currentUser = getActiveUser();
-    setSpace(currentSpace);
-    setUser(currentUser);
+  const reloadData = useCallback(() => {
+    try {
+      const currentSpace = getSpace();
+      const session = getAuthSession();
+      const isLoggedOut =
+        typeof window !== "undefined" &&
+        localStorage.getItem("olm_logged_out") === "true";
 
-    const partnerMember = currentSpace.members.find(
-      (m) => m.user_id !== currentUser.id
-    );
-    setPartner(partnerMember?.profile || null);
-  };
+      const currentUser = getActiveUser();
+      setSpace(currentSpace);
+      setUser(currentUser);
+
+      const hasValidSession = Boolean(session?.userId) && !isLoggedOut;
+      setIsAuthenticated(hasValidSession);
+
+      const partnerMember = currentSpace.members.find(
+        (m) => m.user_id !== currentUser?.id
+      );
+      setPartner(partnerMember?.profile || null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     reloadData();
 
-    const handleUserChanged = () => {
-      reloadData();
-    };
+    const handleUserChanged = () => reloadData();
+    const handleAuthChanged = () => reloadData();
 
     window.addEventListener("olm_user_changed", handleUserChanged);
+    window.addEventListener("olm_auth_changed", handleAuthChanged);
     return () => {
       window.removeEventListener("olm_user_changed", handleUserChanged);
+      window.removeEventListener("olm_auth_changed", handleAuthChanged);
     };
-  }, []);
+  }, [reloadData]);
+
+  const login = async (
+    identifier: string,
+    pin: string
+  ): Promise<{ success: boolean; message: string; user?: Profile }> => {
+    try {
+      // 1. Try server API login
+      try {
+        const response = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identifier, pin }),
+        });
+        const data = await response.json();
+        if (response.ok && data.success && data.user) {
+          setAuthSession({
+            userId: data.user.id,
+            loggedInAt: new Date().toISOString(),
+          });
+          reloadData();
+          return {
+            success: true,
+            message: data.message || `Selamat datang kembali, ${data.user.nickname}! ♡`,
+            user: data.user,
+          };
+        }
+      } catch (apiErr) {
+        console.warn("Backend API not reachable, falling back to local credentials verify:", apiErr);
+      }
+
+      // 2. Client fallback verification
+      const verifyResult = verifyCredentials(identifier, pin);
+      if (verifyResult.success && verifyResult.user) {
+        setAuthSession({
+          userId: verifyResult.user.id,
+          loggedInAt: new Date().toISOString(),
+        });
+        reloadData();
+        return {
+          success: true,
+          message: verifyResult.message,
+          user: verifyResult.user,
+        };
+      }
+
+      return {
+        success: false,
+        message: verifyResult.message || "Identitas atau PIN tidak cocok.",
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err?.message || "Terjadi kesalahan saat masuk.",
+      };
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+      if (isSupabaseConfigured) {
+        const supabase = createClient();
+        if (supabase) {
+          await supabase.auth.signOut();
+        }
+      }
+    } finally {
+      setAuthSession(null);
+      setIsAuthenticated(false);
+      reloadData();
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+    }
+  };
 
   const switchUser = (userId: string) => {
     setStoreActiveUser(userId);
     reloadData();
   };
 
-  const updateProfile = (updated: Partial<Profile>) => {
-    if (!user || !space) return;
-    const newProfile = { ...user, ...updated };
-    const updatedMembers = space.members.map((m) =>
-      m.user_id === user.id ? { ...m, profile: newProfile } : m
-    );
-    const updatedSpace = { ...space, members: updatedMembers };
-    saveSpace(updatedSpace);
+  // STRICT RULE: Can only update profile for currently logged-in account
+  const updateProfile = async (
+    updated: Partial<Profile>,
+    targetUserId?: string
+  ): Promise<{ success: boolean; message: string }> => {
+    if (!user) {
+      return { success: false, message: "Silakan login terlebih dahulu." };
+    }
+
+    const requestedId = targetUserId || user.id;
+
+    // Strict boundary check: If attempting to modify partner or another account, reject immediately!
+    if (requestedId !== user.id) {
+      return {
+        success: false,
+        message: "Kamu hanya dapat mengubah pengaturan profil milik akunmu sendiri.",
+      };
+    }
+
+    // Call server API route with strict authorization
+    try {
+      await fetch("/api/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": user.id,
+        },
+        body: JSON.stringify({
+          targetUserId: user.id,
+          data: updated,
+        }),
+      });
+    } catch (e) {
+      console.warn("Failed to sync profile with server API, applying local store:", e);
+    }
+
+    // Update local space store
+    storeUpdateUserProfile(user.id, updated);
     reloadData();
+
+    return { success: true, message: "Profil akun berhasil diperbarui! ✨" };
   };
 
   const updateSpaceName = (name: string) => {
@@ -89,17 +224,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return result;
   };
 
-  const logout = async () => {
-    if (isSupabaseConfigured) {
-      const supabase = createClient();
-      if (supabase) {
-        await supabase.auth.signOut();
-      }
-    }
-    // In local mode, redirect to welcome page
-    window.location.href = "/welcome";
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -107,12 +231,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         space,
         partner,
         allMembers: space?.members || [],
+        isAuthenticated,
+        isLoading,
         isConfiguredWithSupabase: isSupabaseConfigured,
+        login,
+        logout,
         switchUser,
         updateProfile,
         updateSpaceName,
         joinSpace,
-        logout,
         refresh: reloadData,
       }}
     >

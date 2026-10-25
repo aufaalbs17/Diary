@@ -15,13 +15,21 @@ import {
   Stamp,
   User,
   Calendar,
+  Trash2,
 } from "lucide-react";
 import { LittleNote } from "@/lib/types";
-import { getLittleNotes, openLittleNote, sendLittleNote } from "@/lib/store";
+import {
+  getLittleNotes,
+  openLittleNote,
+  sendLittleNote,
+  deleteLittleNote,
+} from "@/lib/store";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/components/ui/toast-provider";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
+import { motion, AnimatePresence } from "motion/react";
+import confetti from "canvas-confetti";
 
 const SEAL_OPTIONS = [
   { emoji: "💌", label: "Surat Kasih", color: "from-[#D99A96] to-[#B87A76]" },
@@ -357,11 +365,28 @@ export default function LittleNotesPage() {
                     <span className="font-medium text-[#78655F]">
                       Dari {note.sender_name} ♡
                     </span>
-                    <span className="font-mono text-[10px]">
-                      {format(new Date(note.created_at), "d MMM yyyy", {
-                        locale: id,
-                      })}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[10px]">
+                        {format(new Date(note.created_at), "d MMM yyyy", {
+                          locale: id,
+                        })}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          if (confirm(`Hapus surat "${note.title}"?`)) {
+                            await deleteLittleNote(note.id);
+                            setNotes((prev) => prev.filter((n) => n.id !== note.id));
+                            success("Surat manis berhasil dihapus");
+                          }
+                        }}
+                        className="p-1 rounded-full text-[#8D817B] hover:text-rose-600 hover:bg-rose-50 transition-colors opacity-80 sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
+                        title="Hapus Surat"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -370,92 +395,127 @@ export default function LittleNotesPage() {
         </div>
       )}
 
-      {/* Realistic Opened Letter Modal */}
-      {activeOpenedNote && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative max-w-xl w-full bg-[#FAF7F2] border-4 border-white rounded-3xl shadow-2xl p-6 sm:p-10 space-y-6 animate-in zoom-in-95 duration-200 overflow-hidden">
-            {/* Airmail header strip */}
-            <div
-              className="absolute top-0 left-0 right-0 h-2.5"
-              style={{
-                background:
-                  "repeating-linear-gradient(45deg, #CFA6A3 0, #CFA6A3 12px, #FFFFFF 12px, #FFFFFF 20px, #B88582 20px, #B88582 32px, #FFFFFF 32px, #FFFFFF 40px)",
-              }}
-            />
-
-            {/* Close Button */}
-            <button
+      {/* Realistic Opened Letter Modal with Smooth Motion */}
+      <AnimatePresence>
+        {activeOpenedNote && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setActiveOpenedNote(null)}
-              className="absolute top-5 right-5 p-2 text-[#8D817B] hover:text-[#302B29] rounded-full hover:bg-black/5 transition-colors"
-              aria-label="Tutup Surat"
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 25 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 25 }}
+              transition={{ type: "spring", stiffness: 320, damping: 28 }}
+              className="relative max-w-xl w-full bg-[#FAF7F2] border-4 border-white rounded-3xl shadow-2xl p-6 sm:p-10 space-y-6 overflow-hidden z-10"
             >
-              <X className="w-5 h-5" />
-            </button>
+              {/* Airmail header strip */}
+              <div
+                className="absolute top-0 left-0 right-0 h-2.5"
+                style={{
+                  background:
+                    "repeating-linear-gradient(45deg, #CFA6A3 0, #CFA6A3 12px, #FFFFFF 12px, #FFFFFF 20px, #B88582 20px, #B88582 32px, #FFFFFF 32px, #FFFFFF 40px)",
+                }}
+              />
 
-            {/* Letter Header */}
-            <div className="text-center space-y-2 pt-2 border-b border-[#E8DFD5] pb-5">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#CFA6A3] to-[#E5BEBC] border-2 border-white shadow-md flex items-center justify-center text-2xl mx-auto mb-2">
-                {activeOpenedNote.emoji}
-              </div>
-              <p className="text-[11px] uppercase tracking-widest text-[#8D817B] font-mono">
-                Surat Pribadi untuk {activeOpenedNote.recipient_name}
-              </p>
-              <h2 className="font-editorial-heading text-2xl sm:text-3xl font-medium text-[#302B29]">
-                {activeOpenedNote.title}
-              </h2>
-            </div>
-
-            {/* Letter Body Parchment */}
-            <div className="bg-white/80 p-6 sm:p-8 rounded-2xl border border-[#E8DFD5] shadow-xs">
-              <p className="font-editorial-quote text-lg sm:text-xl text-[#302B29] leading-relaxed whitespace-pre-line">
-                {activeOpenedNote.message}
-              </p>
-            </div>
-
-            {/* Signature & Timestamp */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#8D817B] pt-1">
-              <span className="font-editorial-body text-[11px]">
-                Tertulis pada{" "}
-                {format(
-                  new Date(activeOpenedNote.created_at),
-                  "EEEE, d MMMM yyyy • HH:mm",
-                  { locale: id }
-                )}
-              </span>
-              <span className="font-editorial-quote italic text-base text-[#78655F] font-semibold">
-                Dengan segenap kasih, {activeOpenedNote.sender_name} ♡
-              </span>
-            </div>
-
-            {/* Actions: Reply or Close */}
-            <div className="pt-4 border-t border-[#E8DFD5] flex items-center justify-between gap-3">
+              {/* Close Button */}
               <button
-                type="button"
                 onClick={() => setActiveOpenedNote(null)}
-                className="px-5 py-2.5 rounded-full border border-[#E3D8CC] text-xs font-editorial-body text-[#78655F] hover:bg-white"
+                className="absolute top-5 right-5 p-2 text-[#8D817B] hover:text-[#302B29] rounded-full hover:bg-black/5 transition-colors cursor-pointer"
+                aria-label="Tutup Surat"
               >
-                Lipat &amp; Simpan Kembali
+                <X className="w-5 h-5" />
               </button>
 
-              {activeOpenedNote.recipient_name?.toLowerCase() === currentNickname.toLowerCase() ? (
-                <button
-                  type="button"
-                  onClick={() => handleOpenComposer(activeOpenedNote)}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#CFA6A3] to-[#B88582] text-white text-xs font-editorial-body font-medium shadow-md shadow-[#CFA6A3]/30 hover:opacity-95 transition-opacity"
-                >
-                  <Reply className="w-3.5 h-3.5" />
-                  <span>Balas Surat Ini ✍️</span>
-                </button>
-              ) : (
-                <div className="flex items-center gap-1.5 text-xs text-[#8D817B] font-editorial-body">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#CFA6A3]" />
-                  <span>Surat ini telah kamu kirimkan untuk {activeOpenedNote.recipient_name}</span>
+              {/* Letter Header */}
+              <div className="text-center space-y-2 pt-2 border-b border-[#E8DFD5] pb-5">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#CFA6A3] to-[#E5BEBC] border-2 border-white shadow-md flex items-center justify-center text-2xl mx-auto mb-2">
+                  {activeOpenedNote.emoji}
                 </div>
-              )}
-            </div>
+                <p className="text-[11px] uppercase tracking-widest text-[#8D817B] font-mono">
+                  Surat Pribadi untuk {activeOpenedNote.recipient_name}
+                </p>
+                <h2 className="font-editorial-heading text-2xl sm:text-3xl font-medium text-[#302B29]">
+                  {activeOpenedNote.title}
+                </h2>
+              </div>
+
+              {/* Letter Body Parchment */}
+              <div className="bg-white/80 p-6 sm:p-8 rounded-2xl border border-[#E8DFD5] shadow-xs">
+                <p className="font-editorial-quote text-lg sm:text-xl text-[#302B29] leading-relaxed whitespace-pre-line">
+                  {activeOpenedNote.message}
+                </p>
+              </div>
+
+              {/* Signature & Timestamp */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#8D817B] pt-1">
+                <span className="font-editorial-body text-[11px]">
+                  Tertulis pada{" "}
+                  {format(
+                    new Date(activeOpenedNote.created_at),
+                    "EEEE, d MMMM yyyy • HH:mm",
+                    { locale: id }
+                  )}
+                </span>
+                <span className="font-editorial-quote italic text-base text-[#78655F] font-semibold">
+                  Dengan segenap kasih, {activeOpenedNote.sender_name} ♡
+                </span>
+              </div>
+
+              {/* Actions: Reply, Delete or Close */}
+              <div className="pt-4 border-t border-[#E8DFD5] flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveOpenedNote(null)}
+                    className="px-4 py-2 rounded-full border border-[#E3D8CC] text-xs font-editorial-body text-[#78655F] hover:bg-white cursor-pointer"
+                  >
+                    Lipat &amp; Simpan
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (confirm(`Apakah kamu yakin ingin menghapus surat "${activeOpenedNote.title}"?`)) {
+                        await deleteLittleNote(activeOpenedNote.id);
+                        setNotes((prev) => prev.filter((n) => n.id !== activeOpenedNote.id));
+                        setActiveOpenedNote(null);
+                        success("Surat manis berhasil dihapus");
+                      }
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-full border border-rose-200 text-xs font-editorial-body text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                    title="Hapus Surat Manis"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Hapus</span>
+                  </button>
+                </div>
+
+                {activeOpenedNote.recipient_name?.toLowerCase() === currentNickname.toLowerCase() ? (
+                  <button
+                    type="button"
+                    onClick={() => handleOpenComposer(activeOpenedNote)}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#CFA6A3] to-[#B88582] text-white text-xs font-editorial-body font-medium shadow-md shadow-[#CFA6A3]/30 hover:opacity-95 transition-opacity cursor-pointer"
+                  >
+                    <Reply className="w-3.5 h-3.5" />
+                    <span>Balas Surat Ini ✍️</span>
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-1.5 text-xs text-[#8D817B] font-editorial-body">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#CFA6A3]" />
+                    <span>Surat ini telah kamu kirimkan untuk {activeOpenedNote.recipient_name}</span>
+                  </div>
+                )}
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
+
 
       {/* Composer Modal */}
       {isModalOpen && (

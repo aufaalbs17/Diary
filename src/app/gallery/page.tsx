@@ -19,9 +19,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Maximize2,
+  Trash2,
 } from "lucide-react";
 import { CATEGORIES, CategoryKey, MOODS } from "@/lib/types";
-import { GalleryItem, getGalleryMedia } from "@/lib/store";
+import { GalleryItem, getGalleryMedia, deleteGalleryMedia } from "@/lib/store";
+import { useToast } from "@/components/ui/toast-provider";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 
@@ -53,6 +55,23 @@ export default function GalleryPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("polaroid");
   const [activeMediaIndex, setActiveMediaIndex] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { success } = useToast();
+
+  const handleDeleteItem = async (e: React.MouseEvent, item: GalleryItem) => {
+    e.stopPropagation();
+    if (
+      confirm(
+        `Apakah kamu yakin ingin menghapus foto "${item.caption || item.memory_title}" dari galeri?`
+      )
+    ) {
+      await deleteGalleryMedia(item.id, item.memory_id);
+      setItems((prev) => prev.filter((i) => i.id !== item.id));
+      if (activeMediaIndex !== null) {
+        setActiveMediaIndex(null);
+      }
+      success("Foto berhasil dihapus dari galeri");
+    }
+  };
 
   useEffect(() => {
     async function load() {
@@ -367,7 +386,7 @@ export default function GalleryPage() {
                   <div
                     key={item.id}
                     onClick={() => setActiveMediaIndex(idx)}
-                    className={`cursor-pointer group transform ${rotation} hover:rotate-0 hover:scale-103 transition-all duration-300 relative`}
+                    className={`cursor-pointer group transform ${rotation} hover:rotate-0 hover:scale-102 transition-transform duration-300 ease-out will-change-transform relative`}
                   >
                     {/* Washi tape on top center */}
                     <div
@@ -443,11 +462,21 @@ export default function GalleryPage() {
                           <span className="font-mono">
                             {formatDateIndo(item.event_date)}
                           </span>
-                          {item.location_name && (
-                            <span className="truncate max-w-[130px] italic">
-                              📍 {item.location_name}
-                            </span>
-                          )}
+                          <div className="flex items-center gap-1.5">
+                            {item.location_name && (
+                              <span className="truncate max-w-[110px] italic">
+                                📍 {item.location_name}
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={(e) => handleDeleteItem(e, item)}
+                              className="p-1 rounded-full text-[#8D817B] hover:text-rose-600 hover:bg-rose-50 transition-colors opacity-80 sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
+                              title="Hapus foto dari galeri"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -610,13 +639,25 @@ export default function GalleryPage() {
               Media {activeMediaIndex! + 1} dari {filteredItems.length}
             </div>
 
-            <button
-              onClick={() => setActiveMediaIndex(null)}
-              className="p-2 text-white/80 hover:text-white rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-              aria-label="Tutup Lightbox"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={(e) => activeMedia && handleDeleteItem(e, activeMedia)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-rose-300 hover:text-white rounded-full bg-rose-500/20 hover:bg-rose-500/40 border border-rose-500/30 transition-colors cursor-pointer"
+                title="Hapus foto ini dari galeri"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Hapus Foto</span>
+              </button>
+
+              <button
+                onClick={() => setActiveMediaIndex(null)}
+                className="p-2 text-white/80 hover:text-white rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                aria-label="Tutup Lightbox"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Left Arrow Button */}

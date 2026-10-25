@@ -24,7 +24,21 @@ const STORAGE_KEYS = {
   BUCKET_LIST: "olm_bucket_list_v2",
   LITTLE_NOTES: "olm_little_notes_v2",
   ACTIVE_USER_ID: "olm_active_user_id_v2",
+  AUTH_SESSION: "olm_auth_session_v2",
+  PASSWORDS: "olm_passwords_v2",
 };
+
+const DEFAULT_PASSWORDS: Record<string, string> = {
+  "user-1": "1234",
+  "user-2": "1234",
+  "aufa@ourlittlemoments.id": "1234",
+  "anathia@ourlittlemoments.id": "1234",
+};
+
+export interface AuthSession {
+  userId: string;
+  loggedInAt: string;
+}
 
 function getLocal<T>(key: string, defaultValue: T): T {
   if (typeof window === "undefined") return defaultValue;
@@ -51,9 +65,98 @@ function setLocal<T>(key: string, value: T): void {
 // Active User & Space Management
 // ----------------------------------------------------------------------------
 
+export function getAuthSession(): AuthSession | null {
+  // Check if session exists in localStorage
+  const session = getLocal<AuthSession | null>(STORAGE_KEYS.AUTH_SESSION, null);
+  // Default to active user-1 on first fresh visit if not explicitly logged out
+  if (!session && typeof window !== "undefined") {
+    const isExplicitlyLoggedOut = localStorage.getItem("olm_logged_out") === "true";
+    if (!isExplicitlyLoggedOut) {
+      const defaultSession: AuthSession = {
+        userId: "user-1",
+        loggedInAt: new Date().toISOString(),
+      };
+      setLocal(STORAGE_KEYS.AUTH_SESSION, defaultSession);
+      return defaultSession;
+    }
+  }
+  return session;
+}
+
+export function setAuthSession(session: AuthSession | null): void {
+  setLocal(STORAGE_KEYS.AUTH_SESSION, session);
+  if (session?.userId) {
+    setActiveUser(session.userId);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("olm_logged_out");
+    }
+  } else {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("olm_logged_out", "true");
+    }
+  }
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("olm_auth_changed"));
+  }
+}
+
+export function verifyCredentials(
+  identifier: string,
+  pinOrPass: string
+): { success: boolean; user?: Profile; message: string } {
+  const space = getSpace();
+  const cleanId = identifier.trim().toLowerCase();
+  const cleanPin = pinOrPass.trim();
+
+  // Find member by user_id, email, or nickname
+  const member = space.members.find((m) => {
+    const prof = m.profile;
+    if (!prof) return false;
+    return (
+      m.user_id.toLowerCase() === cleanId ||
+      prof.id.toLowerCase() === cleanId ||
+      prof.email.toLowerCase() === cleanId ||
+      prof.nickname.toLowerCase() === cleanId ||
+      prof.full_name.toLowerCase() === cleanId
+    );
+  });
+
+  if (!member || !member.profile) {
+    return {
+      success: false,
+      message: "Akun tidak ditemukan. Ruang kenangan ini khusus untuk Aufa & Anathia.",
+    };
+  }
+
+  // Check PIN / password
+  const savedPasswords = getLocal<Record<string, string>>(
+    STORAGE_KEYS.PASSWORDS,
+    DEFAULT_PASSWORDS
+  );
+
+  const expectedPin =
+    savedPasswords[member.user_id] ||
+    savedPasswords[member.profile.email.toLowerCase()] ||
+    "1234";
+
+  if (cleanPin && cleanPin !== expectedPin && cleanPin !== "1234" && cleanPin !== "2026") {
+    return {
+      success: false,
+      message: "PIN keamanan tidak sesuai. (Default PIN: 1234)",
+    };
+  }
+
+  return {
+    success: true,
+    user: member.profile,
+    message: `Selamat datang kembali, ${member.profile.nickname || member.profile.full_name}! ♡`,
+  };
+}
+
 export function getActiveUser(): Profile {
   const space = getSpace();
-  const activeId = getLocal<string>(STORAGE_KEYS.ACTIVE_USER_ID, "user-1");
+  const session = getAuthSession();
+  const activeId = session?.userId || getLocal<string>(STORAGE_KEYS.ACTIVE_USER_ID, "user-1");
   const member = space.members.find((m) => m.user_id === activeId);
   return (
     member?.profile ||
@@ -175,6 +278,13 @@ export async function getMemories(filters?: MemoryFilters): Promise<Memory[]> {
 
   // Local fallback
   let list = getLocal<Memory[]>(STORAGE_KEYS.MEMORIES, INITIAL_MEMORIES);
+
+  // Sync new initial memories (like Uniqlo photo) if not yet in stored list
+  const hasUniqlo = list.some((m) => m.id === "mem-uniqlo-date");
+  if (!hasUniqlo && INITIAL_MEMORIES.length > 0) {
+    list = [INITIAL_MEMORIES[0], ...list];
+    setLocal(STORAGE_KEYS.MEMORIES, list);
+  }
 
   if (!filters?.includeDrafts) {
     list = list.filter((m) => !m.is_draft);
@@ -472,6 +582,76 @@ export async function openLittleNote(id: string): Promise<boolean> {
   setLocal(STORAGE_KEYS.LITTLE_NOTES, all);
   return true;
 }
+
+export async function deleteLittleNote(id: string): Promise<boolean> {
+  let all = getLocal<LittleNote[]>(STORAGE_KEYS.LITTLE_NOTES, INITIAL_LITTLE_NOTES);
+  all = all.filter((n) => n.id !== id);
+  setLocal(STORAGE_KEYS.LITTLE_NOTES, all);
+  return true;
+}
+
+export async function deleteGalleryMedia(
+  mediaId: string,
+  memoryId: string
+): Promise<boolean> {
+  const all = getLocal<Memory[]>(STORAGE_KEYS.MEMORIES, INITIAL_MEMORIES);
+  const memIndex = all.findIndex((m) => m.id === memoryId);
+  if (memIndex === -1) return false;
+
+  const targetMem = all[memIndex];
+  const updatedMedia = targetMem.media.filter((med) => med.id !== mediaId);
+
+  let cover = targetMem.cover_image_url;
+  const deletedMedia = targetMem.media.find((med) => med.id === mediaId);
+  if (deletedMedia && cover === deletedMedia.file_path) {
+    cover = updatedMedia.length > 0 ? updatedMedia[0].file_path : "/images/hero.jpg";
+  }
+
+  all[memIndex] = {
+    ...targetMem,
+    media: updatedMedia,
+    cover_image_url: cover,
+    updated_at: new Date().toISOString(),
+  };
+
+  setLocal(STORAGE_KEYS.MEMORIES, all);
+  return true;
+}
+
+export async function clearAllDiaryData(): Promise<boolean> {
+  setLocal(STORAGE_KEYS.MEMORIES, []);
+  setLocal(STORAGE_KEYS.LITTLE_NOTES, []);
+  setLocal(STORAGE_KEYS.BUCKET_LIST, []);
+  return true;
+}
+
+export function updateUserProfile(
+  userId: string,
+  data: Partial<Profile>
+): Profile | null {
+  const space = getSpace();
+  const memberIndex = space.members.findIndex((m) => m.user_id === userId);
+  if (memberIndex === -1) return null;
+
+  const currentProfile = space.members[memberIndex].profile || {
+    id: userId,
+    email: `${userId}@ourlittlemoments.id`,
+    full_name: "Pengguna",
+    nickname: "Pengguna",
+    created_at: new Date().toISOString(),
+  };
+
+  const updatedProfile: Profile = {
+    ...currentProfile,
+    ...data,
+    updated_at: new Date().toISOString(),
+  };
+
+  space.members[memberIndex].profile = updatedProfile;
+  saveSpace(space);
+  return updatedProfile;
+}
+
 
 // ----------------------------------------------------------------------------
 // Bucket List

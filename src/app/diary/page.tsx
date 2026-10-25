@@ -16,9 +16,10 @@ import {
   Camera,
   Music,
   Compass,
+  Trash2,
 } from "lucide-react";
 import { Memory, MOODS, CATEGORIES, CategoryKey, MoodKey } from "@/lib/types";
-import { getMemories, toggleFavorite } from "@/lib/store";
+import { getMemories, toggleFavorite, deleteMemory } from "@/lib/store";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { useToast } from "@/components/ui/toast-provider";
@@ -51,8 +52,6 @@ export default function DiaryPage() {
 
   // Filters
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedMood, setSelectedMood] = useState<string>("all");
   const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
 
@@ -70,8 +69,6 @@ export default function DiaryPage() {
     // Fetch filtered
     const data = await getMemories({
       search,
-      category: selectedCategory as CategoryKey | "all",
-      mood: selectedMood as MoodKey | "all",
       isFavorite: onlyFavorites ? true : undefined,
       sortBy,
     });
@@ -82,7 +79,7 @@ export default function DiaryPage() {
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, selectedCategory, selectedMood, onlyFavorites, sortBy]);
+  }, [search, onlyFavorites, sortBy]);
 
   const handleToggleFavorite = async (
     e: React.MouseEvent,
@@ -114,16 +111,10 @@ export default function DiaryPage() {
     }
   };
 
-  const hasActiveFilters =
-    search.trim() !== "" ||
-    selectedCategory !== "all" ||
-    selectedMood !== "all" ||
-    onlyFavorites;
+  const hasActiveFilters = search.trim() !== "" || onlyFavorites;
 
   const resetFilters = () => {
     setSearch("");
-    setSelectedCategory("all");
-    setSelectedMood("all");
     setOnlyFavorites(false);
     setSortBy("newest");
   };
@@ -196,9 +187,8 @@ export default function DiaryPage() {
         </div>
       </div>
 
-      {/* Desk Organizer Filter Console */}
-      <div className="bg-white/80 backdrop-blur-md border border-[#E9E1DB] rounded-3xl p-5 sm:p-6 shadow-sm space-y-4">
-        {/* Row 1: Search & Fast Toggles */}
+      {/* Clean Search & Quick Filter Bar */}
+      <div className="bg-white/80 backdrop-blur-md border border-[#E9E1DB] rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-sm">
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
           {/* Search Bar */}
           <div className="relative flex-1">
@@ -213,7 +203,7 @@ export default function DiaryPage() {
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-[#8D817B] hover:text-[#302B29] rounded-full hover:bg-[#F1EBE4]"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-[#8D817B] hover:text-[#302B29] rounded-full hover:bg-[#F1EBE4] cursor-pointer"
                 aria-label="Bersihkan pencarian"
               >
                 <X className="w-3.5 h-3.5" />
@@ -226,7 +216,7 @@ export default function DiaryPage() {
             {/* Favorites Toggle */}
             <button
               onClick={() => setOnlyFavorites(!onlyFavorites)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-editorial-body transition-all shrink-0 ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-editorial-body transition-all shrink-0 cursor-pointer ${
                 onlyFavorites
                   ? "bg-[#CFA6A3] text-white shadow-md shadow-[#CFA6A3]/25"
                   : "bg-[#FAF8F5] border border-[#E9E1DB] text-[#78655F] hover:border-[#CFA6A3] hover:text-[#302B29]"
@@ -245,86 +235,25 @@ export default function DiaryPage() {
               onClick={() =>
                 setSortBy(sortBy === "newest" ? "oldest" : "newest")
               }
-              className="flex items-center gap-2 px-4 py-2.5 bg-[#FAF8F5] border border-[#E9E1DB] hover:border-[#CFA6A3] text-[#78655F] hover:text-[#302B29] rounded-2xl text-xs font-editorial-body transition-all shrink-0"
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#FAF8F5] border border-[#E9E1DB] hover:border-[#CFA6A3] text-[#78655F] hover:text-[#302B29] rounded-2xl text-xs font-editorial-body transition-all shrink-0 cursor-pointer"
               title="Urutan Cerita"
             >
               <ArrowUpDown className="w-3.5 h-3.5 text-[#CFA6A3]" />
               <span>{sortBy === "newest" ? "Terbaru Dahulu" : "Terlama Dahulu"}</span>
             </button>
-          </div>
-        </div>
 
-        {/* Row 2: Category Chips */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
-          <span className="text-[#8D817B] text-[11px] font-mono uppercase tracking-wider shrink-0 mr-1">
-            Kategori:
-          </span>
-          <button
-            onClick={() => setSelectedCategory("all")}
-            className={`px-3.5 py-1.5 rounded-xl font-editorial-body transition-all shrink-0 ${
-              selectedCategory === "all"
-                ? "bg-[#302B29] text-white shadow-xs"
-                : "bg-[#FAF8F5] border border-[#E9E1DB] text-[#78655F] hover:border-[#CFA6A3] hover:text-[#302B29]"
-            }`}
-          >
-            Semua ({allMemoriesCount})
-          </button>
-          {Object.entries(CATEGORIES).map(([key, config]) => (
-            <button
-              key={key}
-              onClick={() => setSelectedCategory(key)}
-              className={`px-3.5 py-1.5 rounded-xl font-editorial-body transition-all shrink-0 ${
-                selectedCategory === key
-                  ? "bg-[#302B29] text-white shadow-xs"
-                  : "bg-[#FAF8F5] border border-[#E9E1DB] text-[#78655F] hover:border-[#CFA6A3] hover:text-[#302B29]"
-              }`}
-            >
-              {config.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Row 3: Mood Selector & Reset Status */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-[#E9E1DB]/60 text-xs">
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
-            <span className="text-[#8D817B] text-[11px] font-mono uppercase tracking-wider shrink-0 mr-1">
-              Mood:
-            </span>
-            <button
-              onClick={() => setSelectedMood("all")}
-              className={`px-3 py-1 rounded-lg font-editorial-body transition-all shrink-0 ${
-                selectedMood === "all"
-                  ? "bg-[#F1EBE4] text-[#302B29] font-medium"
-                  : "text-[#78655F] hover:bg-[#F1EBE4]/50"
-              }`}
-            >
-              Semua
-            </button>
-            {Object.entries(MOODS).map(([key, config]) => (
+            {/* Reset Button */}
+            {hasActiveFilters && (
               <button
-                key={key}
-                onClick={() => setSelectedMood(key)}
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-editorial-body transition-all shrink-0 ${
-                  selectedMood === key
-                    ? "bg-[#F1EBE4] text-[#302B29] font-medium ring-1 ring-[#CFA6A3]"
-                    : "text-[#78655F] hover:bg-[#F1EBE4]/50"
-                }`}
+                onClick={resetFilters}
+                className="flex items-center gap-1.5 px-3 py-2.5 text-xs text-[#B88582] hover:text-[#9A6764] hover:bg-[#FAF5F0] rounded-2xl transition-colors font-editorial-body shrink-0 cursor-pointer"
+                title="Reset pencarian"
               >
-                <span>{config.emoji}</span>
-                <span>{config.label}</span>
+                <X className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Reset</span>
               </button>
-            ))}
+            )}
           </div>
-
-          {hasActiveFilters && (
-            <button
-              onClick={resetFilters}
-              className="inline-flex items-center gap-1.5 text-xs text-[#B88582] hover:text-[#9A6764] underline underline-offset-4 font-editorial-body"
-            >
-              <X className="w-3 h-3" />
-              <span>Bersihkan Filter</span>
-            </button>
-          )}
         </div>
       </div>
 
@@ -380,7 +309,7 @@ export default function DiaryPage() {
             return (
               <div
                 key={mem.id}
-                className={`relative group transition-all duration-300 ease-out ${tiltClass}`}
+                className={`relative group transition-transform duration-300 ease-out will-change-transform ${tiltClass}`}
               >
                 {/* Washi Tape Accent at Top Center */}
                 <div
@@ -393,7 +322,7 @@ export default function DiaryPage() {
 
                 <Link
                   href={`/diary/${mem.id}`}
-                  className="block bg-[#FFFDF9] rounded-3xl p-3.5 sm:p-4 border border-[#E9E1DB] shadow-md shadow-[#78655F]/8 hover:shadow-2xl hover:shadow-[#78655F]/15 transition-all duration-300 flex flex-col h-full overflow-hidden"
+                  className="block bg-[#FFFDF9] rounded-3xl p-3.5 sm:p-4 border border-[#E9E1DB] shadow-md shadow-[#78655F]/8 hover:shadow-2xl hover:shadow-[#78655F]/15 transition-shadow duration-300 ease-out flex flex-col h-full overflow-hidden"
                 >
                   {/* Polaroid-style Framed Photo */}
                   <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[#F1EBE4] border border-[#EFE8E1] shadow-inner">
@@ -410,6 +339,30 @@ export default function DiaryPage() {
                       <span>{MOODS[mem.mood]?.emoji}</span>
                       <span className="font-medium">{MOODS[mem.mood]?.label}</span>
                     </div>
+
+                    {/* Delete Memory Button */}
+                    <button
+                      type="button"
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (
+                          confirm(
+                            `Apakah kamu yakin ingin menghapus kenangan "${mem.title}"? Kenangan ini akan terhapus secara permanen.`
+                          )
+                        ) {
+                          await deleteMemory(mem.id);
+                          setMemories((prev) => prev.filter((m) => m.id !== mem.id));
+                          setAllMemoriesCount((prev) => Math.max(0, prev - 1));
+                          success("Kenangan berhasil dihapus");
+                        }
+                      }}
+                      className="absolute top-3 right-12 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-[#8D817B] hover:text-rose-600 backdrop-blur-md flex items-center justify-center transition-all duration-200 shadow-sm opacity-80 sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
+                      title="Hapus Kenangan"
+                      aria-label="Hapus Kenangan"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
 
                     {/* Interactive Favorite Heart Button */}
                     <button

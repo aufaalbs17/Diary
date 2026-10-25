@@ -90,9 +90,13 @@ export interface Profile {
   full_name: string;
   nickname: string;
   avatar_url?: string;
+  bio?: string;
+  birthday?: string;
+  favorite_quote?: string;
   created_at: string;
   updated_at?: string;
 }
+
 
 export interface SpaceMember {
   id: string;
