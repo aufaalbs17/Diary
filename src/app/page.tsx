@@ -253,13 +253,13 @@ export default function HomePage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-12">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-12 space-y-8 sm:space-y-12">
       {/* 1. Grand Editorial Scrapbook Hero Banner with Smooth Motion */}
       <motion.section
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-        className="relative overflow-hidden rounded-3xl sm:rounded-4xl bg-gradient-to-br from-[#FFFDF9] via-[#FAF5F0] to-[#F5ECE5] p-6 sm:p-12 border border-[#E9E1DB] shadow-xl shadow-[#78655F]/5"
+        className="relative overflow-hidden rounded-3xl sm:rounded-4xl bg-gradient-to-br from-[#FFFDF9] via-[#FAF5F0] to-[#F5ECE5] p-4.5 sm:p-12 border border-[#E9E1DB] shadow-xl shadow-[#78655F]/5"
       >
         {/* Postal Mark Watermark */}
         <div className="absolute -right-8 -bottom-8 w-56 h-56 rounded-full border-2 border-dashed border-[#CFA6A3]/20 flex items-center justify-center pointer-events-none select-none rotate-12">
@@ -303,7 +303,7 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25, duration: 0.6 }}
-              className="font-editorial-heading text-3xl sm:text-5xl lg:text-6xl font-normal text-[#302B29] tracking-tight leading-tight"
+              className="font-editorial-heading text-2xl sm:text-5xl lg:text-6xl font-normal text-[#302B29] tracking-tight leading-tight"
             >
               Our Little Moments.
             </motion.h1>
@@ -313,39 +313,42 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35, duration: 0.6 }}
-              className="font-editorial-quote text-xl sm:text-2xl text-[#78655F] italic leading-relaxed"
+              className="font-editorial-quote text-base sm:text-2xl text-[#78655F] italic leading-relaxed"
             >
               &ldquo;Karena setiap momen kecil punya cerita manis yang layak dikenang selamanya.&rdquo;
             </motion.p>
 
             {/* Action Buttons with Smooth Spring */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <motion.button
-                whileHover={{ y: -3, scale: 1.02 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => setIsCustomizerOpen(true)}
-                className="flex items-center gap-2 px-5 py-3 bg-white/95 border border-[#E9E1DB] hover:border-[#CFA6A3] text-[#78655F] hover:text-[#302B29] rounded-full text-xs sm:text-sm font-editorial-body transition-all shadow-sm cursor-pointer"
-                title="Ganti Foto Sampul Depan atau Wallpaper Latar Belakang"
-              >
-                <Palette className="w-4 h-4 text-[#CFA6A3]" />
-                <span>Ganti Wallpaper &amp; Sampul 🎨</span>
-              </motion.button>
+            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3 pt-2">
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3">
+                <motion.button
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => setIsCustomizerOpen(true)}
+                  className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 bg-white/95 border border-[#E9E1DB] hover:border-[#CFA6A3] text-[#78655F] hover:text-[#302B29] rounded-full text-xs sm:text-sm font-editorial-body transition-all shadow-sm cursor-pointer whitespace-nowrap text-center"
+                  title="Ganti Foto Sampul Depan atau Wallpaper Latar Belakang"
+                >
+                  <Palette className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#CFA6A3]" />
+                  <span className="hidden sm:inline">Ganti Wallpaper &amp; Sampul 🎨</span>
+                  <span className="sm:hidden">Ganti Sampul 🎨</span>
+                </motion.button>
 
-              <motion.button
-                whileHover={{ y: -3, scale: 1.02 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => setIsGuideModalOpen(true)}
-                className="flex items-center gap-2 px-5 py-3 bg-white/95 border border-[#E9E1DB] hover:border-[#CFA6A3] text-[#78655F] hover:text-[#302B29] rounded-full text-xs sm:text-sm font-editorial-body transition-all shadow-sm cursor-pointer"
-                title="Lihat Panduan &amp; Tata Cara Pemakaian Web"
-              >
-                <BookOpen className="w-4 h-4 text-[#CFA6A3]" />
-                <span>Panduan Web 📖</span>
-              </motion.button>
+                <motion.button
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => setIsGuideModalOpen(true)}
+                  className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 bg-white/95 border border-[#E9E1DB] hover:border-[#CFA6A3] text-[#78655F] hover:text-[#302B29] rounded-full text-xs sm:text-sm font-editorial-body transition-all shadow-sm cursor-pointer whitespace-nowrap text-center"
+                  title="Lihat Panduan &amp; Tata Cara Pemakaian Web"
+                >
+                  <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#CFA6A3]" />
+                  <span>Panduan Web 📖</span>
+                </motion.button>
+              </div>
 
-              <motion.div whileHover={{ y: -3, scale: 1.02 }} whileTap={{ scale: 0.96 }}>
+              <motion.div whileHover={{ y: -3, scale: 1.02 }} whileTap={{ scale: 0.96 }} className="w-full sm:w-auto">
                 <Link
                   href="/diary/new"
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#CFA6A3] to-[#B88582] text-white rounded-full text-xs sm:text-sm font-editorial-body font-medium transition-all shadow-md shadow-[#CFA6A3]/30 hover:shadow-lg"
+                  className="flex items-center justify-center gap-2 w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-[#CFA6A3] to-[#B88582] text-white rounded-full text-xs sm:text-sm font-editorial-body font-medium transition-all shadow-md shadow-[#CFA6A3]/30 hover:shadow-lg text-center"
                 >
                   <Plus className="w-4 h-4" />
                   <span>+ Tulis Cerita Baru</span>
@@ -355,7 +358,7 @@ export default function HomePage() {
           </div>
 
           {/* Hero Right: Customizable Polaroid Keepsake of Aufa & Anathia */}
-          <div className="relative mx-auto lg:mx-0">
+          <div className="relative mx-auto lg:mx-0 pt-2 sm:pt-0">
             <motion.div
               initial={{ opacity: 0, rotate: 3, scale: 0.95 }}
               animate={{ opacity: 1, rotate: 2, scale: 1 }}
@@ -365,7 +368,7 @@ export default function HomePage() {
                 const mem = allMemories.find((m) => m.id === "mem-uniqlo-date") || allMemories[0];
                 if (mem) setQuickViewMemory(mem);
               }}
-              className="cursor-pointer relative shrink-0 bg-white p-3.5 pb-4 rounded-2xl shadow-xl shadow-[#78655F]/12 border border-[#E8DFD5] w-64 sm:w-72 select-none group"
+              className="cursor-pointer relative shrink-0 bg-white p-3 sm:p-3.5 pb-3.5 sm:pb-4 rounded-2xl shadow-xl shadow-[#78655F]/12 border border-[#E8DFD5] w-56 sm:w-72 select-none group"
             >
               {/* Washi tape on top */}
               <div
@@ -441,39 +444,39 @@ export default function HomePage() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-6">
           {/* Total Memories Card */}
           <motion.div
             whileHover={{ y: -5, scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
             transition={{ type: "spring", stiffness: 350, damping: 25 }}
             onClick={() => setActiveFilter("all")}
-            className={`cursor-pointer group relative bg-[#FFFDF9] p-5 sm:p-6 rounded-3xl border transition-all flex flex-col justify-between overflow-hidden ${
+            className={`cursor-pointer group relative bg-[#FFFDF9] p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border transition-all flex flex-col justify-between overflow-hidden ${
               activeFilter === "all"
                 ? "border-[#CFA6A3] ring-2 ring-[#CFA6A3]/30 shadow-md shadow-[#CFA6A3]/10"
                 : "border-[#E9E1DB] shadow-sm hover:border-[#CFA6A3]/60 hover:shadow-md"
             }`}
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div
-                className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all shadow-2xs ${
+                className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all shadow-2xs ${
                   activeFilter === "all"
                     ? "bg-[#CFA6A3] text-white scale-105"
                     : "bg-[#FAF5F0] border border-[#E9E1DB] text-[#CFA6A3] group-hover:bg-[#CFA6A3] group-hover:text-white"
                 }`}
               >
-                <BookOpen className="w-5 h-5" />
+                <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-[#8D817B]">
-                {activeFilter === "all" ? "Sedang Aktif ✓" : "Semua Cerita"}
+              <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-[#8D817B]">
+                {activeFilter === "all" ? "Aktif ✓" : "Semua"}
               </span>
             </div>
             <div>
-              <p className="font-editorial-heading text-3xl sm:text-4xl font-medium text-[#302B29]">
+              <p className="font-editorial-heading text-2xl sm:text-4xl font-medium text-[#302B29]">
                 {stats.totalMemories}
               </p>
-              <p className="text-xs text-[#8D817B] font-editorial-body mt-1">
-                Lembaran Kisah Bersama
+              <p className="text-[11px] sm:text-xs text-[#8D817B] font-editorial-body mt-0.5 sm:mt-1">
+                Kisah Bersama
               </p>
             </div>
           </motion.div>
@@ -484,32 +487,32 @@ export default function HomePage() {
             whileTap={{ scale: 0.97 }}
             transition={{ type: "spring", stiffness: 350, damping: 25 }}
             onClick={() => setActiveFilter("photos")}
-            className={`cursor-pointer group relative bg-[#FFFDF9] p-5 sm:p-6 rounded-3xl border transition-all flex flex-col justify-between overflow-hidden ${
+            className={`cursor-pointer group relative bg-[#FFFDF9] p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border transition-all flex flex-col justify-between overflow-hidden ${
               activeFilter === "photos"
                 ? "border-[#CFA6A3] ring-2 ring-[#CFA6A3]/30 shadow-md shadow-[#CFA6A3]/10"
                 : "border-[#E9E1DB] shadow-sm hover:border-[#CFA6A3]/60 hover:shadow-md"
             }`}
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div
-                className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all shadow-2xs ${
+                className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all shadow-2xs ${
                   activeFilter === "photos"
                     ? "bg-[#CFA6A3] text-white scale-105"
                     : "bg-[#FAF5F0] border border-[#E9E1DB] text-[#CFA6A3] group-hover:bg-[#CFA6A3] group-hover:text-white"
                 }`}
               >
-                <Camera className="w-5 h-5" />
+                <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-[#8D817B]">
-                {activeFilter === "photos" ? "Sedang Aktif ✓" : "Filter Foto"}
+              <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-[#8D817B]">
+                {activeFilter === "photos" ? "Aktif ✓" : "Foto"}
               </span>
             </div>
             <div>
-              <p className="font-editorial-heading text-3xl sm:text-4xl font-medium text-[#302B29]">
+              <p className="font-editorial-heading text-2xl sm:text-4xl font-medium text-[#302B29]">
                 {stats.totalPhotos + stats.totalVideos}
               </p>
-              <p className="text-xs text-[#8D817B] font-editorial-body mt-1">
-                Foto &amp; Rekaman Polaroid
+              <p className="text-[11px] sm:text-xs text-[#8D817B] font-editorial-body mt-0.5 sm:mt-1">
+                Foto Polaroid
               </p>
             </div>
           </motion.div>
@@ -771,7 +774,7 @@ export default function HomePage() {
                 <p className="font-editorial-body text-xs sm:text-sm text-[#78655F] italic line-clamp-1 max-w-xl">
                   {latestNote.unlock_at && new Date(latestNote.unlock_at) > new Date()
                     ? "Surat tersegel rahasia, menanti saat yang tepat untuk dibaca... 🔒"
-                    : `&ldquo;${latestNote.message}&rdquo;`}
+                    : `“${latestNote.message}”`}
                 </p>
               </div>
             </div>
@@ -781,7 +784,7 @@ export default function HomePage() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleOpenEnvelope}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#CFA6A3] to-[#B88582] text-white text-xs font-editorial-body font-medium shadow-md shadow-[#CFA6A3]/30 transition-all shrink-0 active:scale-95 self-end sm:self-auto cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 rounded-full bg-gradient-to-r from-[#CFA6A3] to-[#B88582] text-white text-xs font-editorial-body font-medium shadow-md shadow-[#CFA6A3]/30 transition-all shrink-0 active:scale-95 cursor-pointer text-center"
             >
               <Mail className="w-3.5 h-3.5" />
               <span>Buka Amplop Pink 💌</span>

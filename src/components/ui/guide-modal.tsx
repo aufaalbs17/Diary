@@ -123,7 +123,7 @@ export function GuideModal({
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2.5 sm:p-6 overflow-y-auto">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -139,35 +139,35 @@ export function GuideModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 24 }}
             transition={{ type: "spring", stiffness: 360, damping: 28 }}
-            className="relative w-full max-w-4xl bg-[#FAF8F5] rounded-3xl sm:rounded-4xl shadow-2xl border border-[#E9E1DB] overflow-hidden z-10 max-h-[92vh] flex flex-col my-auto"
+            className="relative w-full max-w-4xl bg-[#FAF8F5] rounded-3xl sm:rounded-4xl shadow-2xl border border-[#E9E1DB] overflow-hidden z-10 max-h-[86vh] sm:max-h-[92vh] flex flex-col my-auto"
           >
             {/* Header */}
-            <div className="p-6 sm:p-8 bg-gradient-to-r from-[#FFFDF9] via-[#FAF5F0] to-[#F5ECE5] border-b border-[#E9E1DB] flex items-start justify-between gap-4 shrink-0 relative">
+            <div className="p-4 sm:p-8 bg-gradient-to-r from-[#FFFDF9] via-[#FAF5F0] to-[#F5ECE5] border-b border-[#E9E1DB] flex items-start justify-between gap-3 sm:gap-4 shrink-0 relative">
               {/* Washi tape accent */}
               <div
-                className="absolute -top-3 left-1/2 -translate-x-1/2 w-36 h-6 bg-gradient-to-r from-[#F8DEDC]/90 via-[#F3C5C0]/85 to-[#F8DEDC]/90 border-y border-[#E2AEAA]/60 pointer-events-none shadow-2xs rotate-[0.5deg]"
+                className="absolute -top-3 left-1/2 -translate-x-1/2 w-32 sm:w-36 h-6 bg-gradient-to-r from-[#F8DEDC]/90 via-[#F3C5C0]/85 to-[#F8DEDC]/90 border-y border-[#E2AEAA]/60 pointer-events-none shadow-2xs rotate-[0.5deg]"
                 style={{
                   clipPath:
                     "polygon(4% 0%, 96% 0%, 100% 15%, 96% 35%, 100% 55%, 96% 75%, 100% 100%, 0% 100%, 4% 75%, 0% 55%, 4% 35%, 0% 15%)",
                 }}
               />
 
-              <div className="space-y-1.5">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#E9E1DB] shadow-2xs text-[11px] font-mono uppercase tracking-wider text-[#78655F]">
-                  <Sparkles className="w-3.5 h-3.5 text-[#CFA6A3]" />
+              <div className="space-y-1 sm:space-y-1.5">
+                <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-white border border-[#E9E1DB] shadow-2xs text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-[#78655F]">
+                  <Sparkles className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-[#CFA6A3]" />
                   <span>Panduan Ruang Kenangan Kita</span>
                 </div>
-                <h2 className="font-editorial-heading text-2xl sm:text-3xl font-medium text-[#302B29]">
+                <h2 className="font-editorial-heading text-lg sm:text-3xl font-medium text-[#302B29] leading-snug">
                   Tata Cara Mengisi &amp; Menikmati Web Bersama
                 </h2>
-                <p className="font-editorial-body text-xs sm:text-sm text-[#78655F]">
+                <p className="font-editorial-body text-[11px] sm:text-sm text-[#78655F]">
                   Panduan ringkas dan manis untuk mengabadikan momen, berkirim pesan cinta, dan menjelajahi fitur website kita.
                 </p>
               </div>
 
               <button
                 onClick={onClose}
-                className="w-9 h-9 rounded-full bg-white hover:bg-[#F1EBE4] border border-[#E9E1DB] text-[#78655F] hover:text-[#302B29] flex items-center justify-center transition-colors cursor-pointer shrink-0 shadow-xs"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white hover:bg-[#F1EBE4] border border-[#E9E1DB] text-[#78655F] hover:text-[#302B29] flex items-center justify-center transition-colors cursor-pointer shrink-0 shadow-xs"
                 title="Tutup (ESC)"
                 aria-label="Tutup"
               >
@@ -176,7 +176,7 @@ export function GuideModal({
             </div>
 
             {/* Scrollable Body with 6 Cards */}
-            <div className="p-5 sm:p-8 overflow-y-auto space-y-6">
+            <div className="p-3.5 sm:p-8 overflow-y-auto space-y-4 sm:space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                 {tutorialSteps.map((step) => {
                   const Icon = step.icon;

@@ -73,7 +73,7 @@ export default function RootLayout({
                 <Suspense fallback={null}>
                   <Navbar />
                 </Suspense>
-                <main className="flex-1 pb-20 lg:pb-8 flex flex-col">
+                <main className="flex-1 pb-28 lg:pb-8 flex flex-col">
                   <Suspense fallback={<div className="p-8 text-center text-xs text-[#8D817B]">Memuat...</div>}>
                     <PageTransition>{children}</PageTransition>
                   </Suspense>

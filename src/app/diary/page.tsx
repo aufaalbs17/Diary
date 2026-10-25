@@ -120,9 +120,9 @@ export default function DiaryPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-12 space-y-6 sm:space-y-10">
       {/* Vintage Scrapbook Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#FFFDF9] via-[#FAF5F0] to-[#F5ECE5] p-6 sm:p-10 border border-[#E9E1DB] shadow-lg shadow-[#78655F]/5">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#FFFDF9] via-[#FAF5F0] to-[#F5ECE5] p-4.5 sm:p-10 border border-[#E9E1DB] shadow-lg shadow-[#78655F]/5">
         {/* Subtle decorative postmark watermark */}
         <div className="absolute -right-6 -bottom-6 w-48 h-48 rounded-full border-2 border-dashed border-[#CFA6A3]/20 flex items-center justify-center pointer-events-none select-none rotate-12">
           <div className="w-36 h-36 rounded-full border border-[#CFA6A3]/20 flex flex-col items-center justify-center text-[10px] text-[#CFA6A3]/30 font-mono text-center tracking-widest uppercase">
@@ -134,43 +134,43 @@ export default function DiaryPage() {
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/80 border border-[#E9E1DB] text-[11px] font-mono tracking-widest text-[#8D817B] uppercase shadow-2xs">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/80 border border-[#E9E1DB] text-[10px] sm:text-[11px] font-mono tracking-widest text-[#8D817B] uppercase shadow-2xs">
               <Sparkles className="w-3 h-3 text-[#CFA6A3]" />
               <span>Jurnal Kenangan • Aufa & Anathia</span>
             </div>
 
-            <h1 className="font-editorial-heading text-3xl sm:text-5xl lg:text-6xl font-medium text-[#302B29] tracking-tight">
+            <h1 className="font-editorial-heading text-2xl sm:text-5xl lg:text-6xl font-medium text-[#302B29] tracking-tight">
               Our Diary.
             </h1>
 
-            <p className="font-editorial-body text-sm sm:text-base text-[#78655F] leading-relaxed">
+            <p className="font-editorial-body text-xs sm:text-base text-[#78655F] leading-relaxed">
               Kumpulan lembaran cerita, tawa hangat, dan jejak langkah kecil yang kita rajut bersama. Setiap halaman menyimpan sejuta makna yang tak lekang oleh waktu.
             </p>
 
             {/* Quick Inspiration Counters */}
-            <div className="flex flex-wrap items-center gap-3 pt-2 text-xs font-editorial-body text-[#78655F]">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/70 border border-[#E9E1DB]/80 shadow-2xs">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-2 text-xs font-editorial-body text-[#78655F]">
+              <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-xl bg-white/70 border border-[#E9E1DB]/80 shadow-2xs">
                 <BookOpen className="w-3.5 h-3.5 text-[#CFA6A3]" />
-                <strong className="text-[#302B29] font-medium">{allMemoriesCount}</strong> Cerita Tersimpan
+                <strong className="text-[#302B29] font-medium">{allMemoriesCount}</strong> Cerita
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/70 border border-[#E9E1DB]/80 shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-xl bg-white/70 border border-[#E9E1DB]/80 shadow-2xs">
                 <Heart className="w-3.5 h-3.5 fill-[#CFA6A3] text-[#CFA6A3]" />
                 <strong className="text-[#302B29] font-medium">{favoriteCount}</strong> Favorit
               </span>
               {locationsCount > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/70 border border-[#E9E1DB]/80 shadow-2xs">
+                <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-xl bg-white/70 border border-[#E9E1DB]/80 shadow-2xs">
                   <Compass className="w-3.5 h-3.5 text-[#CFA6A3]" />
-                  <strong className="text-[#302B29] font-medium">{locationsCount}</strong> Tempat Dijumpai
+                  <strong className="text-[#302B29] font-medium">{locationsCount}</strong> Tempat
                 </span>
               )}
             </div>
           </div>
 
           {/* Action CTAs */}
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 w-full sm:w-auto">
             <Link
               href="/book"
-              className="flex items-center gap-2 px-5 py-3 rounded-full bg-white hover:bg-[#FAF8F5] border border-[#E9E1DB] hover:border-[#CFA6A3] text-xs sm:text-sm font-editorial-body text-[#78655F] hover:text-[#302B29] transition-all shadow-sm active:scale-95"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-white hover:bg-[#FAF8F5] border border-[#E9E1DB] hover:border-[#CFA6A3] text-xs sm:text-sm font-editorial-body text-[#78655F] hover:text-[#302B29] transition-all shadow-sm active:scale-95 text-center whitespace-nowrap"
             >
               <BookOpen className="w-4 h-4 text-[#CFA6A3]" />
               <span>Buka Mode Buku 📖</span>
@@ -178,10 +178,10 @@ export default function DiaryPage() {
 
             <Link
               href="/diary/new"
-              className="flex items-center gap-2 px-6 py-3 rounded-full bg-[#CFA6A3] hover:bg-[#B88582] text-white text-xs sm:text-sm font-editorial-body font-medium transition-all shadow-md shadow-[#CFA6A3]/30 hover:shadow-lg active:scale-95"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-[#CFA6A3] hover:bg-[#B88582] text-white text-xs sm:text-sm font-editorial-body font-medium transition-all shadow-md shadow-[#CFA6A3]/30 hover:shadow-lg active:scale-95 text-center whitespace-nowrap"
             >
               <Plus className="w-4 h-4" />
-              <span>+ Tulis Cerita Baru</span>
+              <span>+ Tulis Cerita</span>
             </Link>
           </div>
         </div>

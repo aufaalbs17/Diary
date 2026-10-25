@@ -112,25 +112,25 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 w-full glass-header bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#E9E1DB] transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-15 sm:h-18 flex items-center justify-between gap-2 sm:gap-4">
         {/* Brand with Aufa & Anathia subtitle & Heartbeat micro-animation */}
         <Link
           href="/"
           className="flex flex-col group transition-transform duration-200 active:scale-95 shrink-0 select-none"
         >
-          <div className="flex items-center gap-1.5">
-            <span className="font-editorial-heading text-lg sm:text-xl font-medium tracking-tight text-[#302B29] group-hover:text-[#B88582] transition-colors duration-200 whitespace-nowrap">
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            <span className="font-editorial-heading text-base sm:text-xl font-medium tracking-tight text-[#302B29] group-hover:text-[#B88582] transition-colors duration-200 whitespace-nowrap">
               Our Little Moments
             </span>
             <motion.span
               whileHover={{ scale: 1.35, rotate: [0, -12, 12, -6, 0] }}
               transition={{ duration: 0.45, ease: "easeInOut" }}
-              className="inline-block text-[#CFA6A3] text-sm cursor-pointer"
+              className="inline-block text-[#CFA6A3] text-xs sm:text-sm cursor-pointer"
             >
               🤍
             </motion.span>
           </div>
-          <span className="font-editorial-quote italic text-xs text-[#8D817B] -mt-0.5 group-hover:text-[#302B29] transition-colors duration-200 whitespace-nowrap">
+          <span className="font-editorial-quote italic text-[11px] sm:text-xs text-[#8D817B] -mt-0.5 group-hover:text-[#302B29] transition-colors duration-200 whitespace-nowrap">
             Aufa &amp; Anathia&apos;s Diary
           </span>
         </Link>
@@ -274,11 +274,12 @@ export function Navbar() {
             </AnimatePresence>
           </div>
 
-          {/* Quick Add Button with Smooth Spring Hover & Rotating Icon */}
+          {/* Quick Add Button with Smooth Spring Hover & Rotating Icon (Desktop only, mobile has bottom floating button) */}
           <motion.div
             whileTap={{ scale: 0.94 }}
             whileHover={{ scale: 1.03, y: -1 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="hidden sm:block"
           >
             <Link
               href="/diary/new"
@@ -296,17 +297,17 @@ export function Navbar() {
               whileHover={{ scale: 1.02, y: -0.5 }}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white border border-[#E9E1DB] rounded-full hover:border-[#CFA6A3] hover:shadow-sm transition-all duration-200 text-xs text-[#302B29] shadow-2xs whitespace-nowrap cursor-pointer"
+              className="flex items-center gap-1.5 sm:gap-2 p-1 sm:px-3 sm:py-1.5 bg-white border border-[#E9E1DB] rounded-full hover:border-[#CFA6A3] hover:shadow-sm transition-all duration-200 text-xs text-[#302B29] shadow-2xs whitespace-nowrap cursor-pointer"
               title="Profil Akun (Aufa & Anathia)"
             >
-              <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#CFA6A3] to-[#F1EBE4] flex items-center justify-center text-[#78655F] text-xs font-bold shadow-inner group-hover:scale-105 transition-transform">
+              <div className="w-7 h-7 sm:w-6 sm:h-6 rounded-full bg-gradient-to-tr from-[#CFA6A3] to-[#F1EBE4] flex items-center justify-center text-[#78655F] text-xs font-bold shadow-inner group-hover:scale-105 transition-transform">
                 {user?.nickname?.charAt(0) || "A"}
               </div>
-              <span className="font-editorial-body font-medium">
+              <span className="hidden sm:inline font-editorial-body font-medium">
                 {user?.nickname || "Aufa"}
               </span>
               <ChevronDown
-                className={`w-3 h-3 text-[#8D817B] transition-transform duration-300 ease-out ${
+                className={`hidden sm:inline w-3 h-3 text-[#8D817B] transition-transform duration-300 ease-out ${
                   isUserMenuOpen ? "rotate-180 text-[#302B29]" : ""
                 }`}
               />
